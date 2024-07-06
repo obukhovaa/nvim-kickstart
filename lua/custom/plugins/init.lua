@@ -3,6 +3,34 @@
 --
 -- See the kickstart.nvim README for more information
 return {
+	-- Ollama GPT
+	{
+		"David-Kunz/gen.nvim",
+		opts = {
+			model = "deepseek-coder-v2:latest", -- The default model to use.
+			host = "localhost",        -- The host running the Ollama service.
+			port = "11434",            -- The port on which the Ollama service is listening.
+			quit_map = "q",            -- set keymap for close the response window
+			retry_map = "<c-r>",       -- set keymap to re-send the current prompt
+			init = function(options) pcall(io.popen, "ollama serve > /dev/null 2>&1 &") end,
+			-- Function to initialize Ollama
+			command = function(options)
+				local body = { model = options.model, stream = true }
+				return "curl --silent --no-buffer -X POST http://" ..
+					options.host .. ":" .. options.port .. "/api/chat -d $body"
+			end,
+			-- The command for the Ollama service. You can use placeholders $prompt, $model and $body (shellescaped).
+			-- This can also be a command string.
+			-- The executed command must return a JSON object with { response, context }
+			-- (context property is optional).
+			-- list_models = '<omitted lua function>', -- Retrieves a list of model names
+			display_mode = "float", -- The display mode. Can be "float" or "split" or "horizontal-split".
+			show_prompt = false, -- Shows the prompt submitted to Ollama.
+			show_model = true, -- Displays which model you are using at the beginning of your chat session.
+			no_auto_close = false, -- Never closes the window automatically.
+			debug = false  -- Prints errors and the command which is run.
+		}
+	},
 	'obukhovaa/gotests-vim',    -- generates go test templates
 	{
 		'mhartington/formatter.nvim', -- ktlint for koltin sources
@@ -97,25 +125,30 @@ return {
 			-- OPTIONAL:
 			--   `nvim-notify` is only needed, if you want to use the notification view.
 			--   If not available, we use `mini` as the fallback
-			"rcarriga/nvim-notify",
-		}
-	},
-	require("noice").setup({
-		lsp = {
-			-- override markdown rendering so that **cmp** and other plugins use **Treesitter**
-			override = {
-				["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-				["vim.lsp.util.stylize_markdown"] = true,
-				["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
-			},
+			-- NOTE:
+			--   causes issue with UI flickering when notification is displayed, consider to update when
+			--   fixed.
+			-- "rcarriga/nvim-notify",
 		},
-		-- you can enable a preset for easier configuration
-		presets = {
-			bottom_search = true, -- use a classic bottom cmdline for search
-			command_palette = true, -- position the cmdline and popupmenu together
-			long_message_to_split = true, -- long messages will be sent to a split
-			inc_rename = false,  -- enables an input dialog for inc-rename.nvim
-			lsp_doc_border = false, -- add a border to hover docs and signature help
-		},
-	})
+		config = function()
+			require("noice").setup({
+				lsp = {
+					-- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+					override = {
+						["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+						["vim.lsp.util.stylize_markdown"] = true,
+						["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+					},
+				},
+				-- you can enable a preset for easier configuration
+				presets = {
+					bottom_search = true, -- use a classic bottom cmdline for search
+					command_palette = false, -- position the cmdline and popupmenu together
+					long_message_to_split = true, -- long messages will be sent to a split
+					inc_rename = false, -- enables an input dialog for inc-rename.nvim
+					lsp_doc_border = false, -- add a border to hover docs and signature help
+				},
+			})
+		end
+	}
 }

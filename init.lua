@@ -123,7 +123,7 @@ require('lazy').setup({
     'lukas-reineke/indent-blankline.nvim',
     main = "ibl",
     opts = {
-      enabled = false,
+      enabled = true,
       whitespace = {
         highlight = "IblWhitespace",
         remove_blankline_trail = true,
@@ -138,9 +138,17 @@ require('lazy').setup({
   { 'numToStr/Comment.nvim', opts = {} },
 
   -- auto closer for brackets
-  'rstacruz/vim-closer',
-  -- another good closer
-  -- 'Raimondi/delimitMate',
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",
+    config = function()
+      require('nvim-autopairs').setup {}
+      -- If you want to automatically add `(` after selecting a function or method
+      local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
+      local cmp = require 'cmp'
+      cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+    end,
+  },
 
   -- Fuzzy Finder (files, lsp, etc)
   {
@@ -198,6 +206,7 @@ require('lazy').setup({
 
   require 'kickstart.plugins.autoformat',
   require 'kickstart.plugins.debug',
+
   { import = 'custom.plugins' },
 }, {})
 
@@ -262,6 +271,9 @@ vim.keymap.set('n', '<leader>O', 'O<Esc>0"_D', { desc = 'Insert blank line' })
 vim.keymap.set('n', '<leader>f', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle filetree' })
 -- Zenmode
 vim.keymap.set('n', '<leader><Home>', '<Cmd>ZenMode<CR>', { desc = 'Toggle zenmode' })
+-- Ollama gen.nvim
+vim.keymap.set({ 'n', 'v' }, '<leader>`', ':Gen<CR>')
+vim.keymap.set({ 'n' }, '<leader>~', require('gen').select_model, { desc = 'Select LLM to use' })
 
 -- [[ Highlight onyank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -311,10 +323,10 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
-require('nvim-treesitter.configs').setup {
+require('nvim-treesitter.configs').setup({
   -- Add languages to be installed here that you want installed for treesitter
   ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim',
-    'kotlin', 'java' },
+    'kotlin', 'java', 'yaml' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = true,
@@ -374,7 +386,7 @@ require('nvim-treesitter.configs').setup {
       },
     },
   },
-}
+})
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
