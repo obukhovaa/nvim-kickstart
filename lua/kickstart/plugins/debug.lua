@@ -6,7 +6,7 @@ return {
         -- Creates a beautiful debugger UI
         'rcarriga/nvim-dap-ui',
         -- Required dependency for nvim-dap-ui
-        "nvim-neotest/nvim-nio",
+        'nvim-neotest/nvim-nio',
         -- Installs the debug adapters for you
         'williamboman/mason.nvim',
         'jay-babu/mason-nvim-dap.nvim',
@@ -17,10 +17,10 @@ return {
             'mxsdev/nvim-dap-vscode-js',
             dependencies = {
                 {
-                    "microsoft/vscode-js-debug",
-                    build = "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out"
-                }
-            }
+                    'microsoft/vscode-js-debug',
+                    build = 'npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out',
+                },
+            },
         },
         -- Add inline debug values
         'theHamsta/nvim-dap-virtual-text',
@@ -42,11 +42,13 @@ return {
             -- online, please don't ask me how to install them :)
             ensure_installed = {
                 -- Update this to ensure that you have the debuggers for the langs you want
-                'delve', 'js', 'kotlin'
+                'delve',
+                'js',
+                'kotlin',
             },
         }
 
-        require("nvim-dap-virtual-text").setup()
+        require('nvim-dap-virtual-text').setup()
 
         -- Basic debugging keymaps, feel free to change to your liking!
         vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: Start/Continue' })
@@ -91,9 +93,9 @@ return {
         require('dap-go').setup()
 
         -- Install js specific config
-        require("dap-vscode-js").setup {
+        require('dap-vscode-js').setup {
             -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
-            debugger_path = os.getenv('HOME') .. "/.local/share/nvim/lazy/vscode-js-debug",              -- Path to vscode-js-debug installation.
+            debugger_path = os.getenv 'HOME' .. '/.local/share/nvim/lazy/vscode-js-debug', -- Path to vscode-js-debug installation.
             -- debugger_cmd = 'js-debug-adapter' },
             adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost' }, -- which adapters to register in nvim-dap
             -- log_file_path = "(stdpath cache)/dap_vscode_js.log" -- Path for file logging
@@ -102,7 +104,7 @@ return {
         }
 
         -- language config
-        for _, language in ipairs({ 'typescript', 'javascript' }) do
+        for _, language in ipairs { 'typescript', 'javascript' } do
             dap.configurations[language] = {
                 {
                     type = 'pwa-node',
@@ -125,8 +127,8 @@ return {
                     protocol = 'inspector',
                     skipFiles = { '<node_internals>/**', 'node_modules/**' },
                     resolveSourceMapLocations = {
-                        "${workspaceFolder}/**",
-                        "!**/node_modules/**",
+                        '${workspaceFolder}/**',
+                        '!**/node_modules/**',
                     },
                 },
                 {
@@ -141,8 +143,8 @@ return {
                     protocol = 'inspector',
                     skipFiles = { '<node_internals>/**', 'node_modules/**' },
                     resolveSourceMapLocations = {
-                        "${workspaceFolder}/**",
-                        "!**/node_modules/**",
+                        '${workspaceFolder}/**',
+                        '!**/node_modules/**',
                     },
                 },
                 {
@@ -168,8 +170,8 @@ return {
                     resolveSourceMapLocations = nil,
                     attachExistingChildren = false,
                     autoAttachChildProcesses = false,
-                    sourceMaps = true
-                }
+                    sourceMaps = true,
+                },
             }
         end
     end,
