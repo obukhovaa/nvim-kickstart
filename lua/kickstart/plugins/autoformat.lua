@@ -46,7 +46,7 @@ return {
         -- Tsserver usually works poorly. Sorry you work with bad languages
         -- You can remove this line if you know what you're doing :)
         -- Had to drop koltin, because it does shitty continuationIndent tabx2 https://github.com/fwcd/kotlin-language-server/blob/5719cd430d78419851f01e42e97f2be4e537b77d/server/src/main/kotlin/org/javacs/kt/formatting/Formatter.kt#L13C45-L13C45
-        if client.name == 'tsserver' or client.name == 'kotlin_language_server' then
+        if client.name == 'ts_ls' or client.name == 'kotlin_language_server' then
           return
         end
 
@@ -60,8 +60,6 @@ return {
               return
             end
 
-            -- print("testing!!!")
-            -- print(vim.inspect(client))
             vim.lsp.buf.format {
               async = false,
               filter = function(c)

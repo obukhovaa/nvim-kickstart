@@ -99,7 +99,7 @@ return {
         require('dap-go').setup()
 
         -- Install js specific config
-        require("dap-vscode-js").setup({
+        require("dap-vscode-js").setup {
             -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
             debugger_path = os.getenv('HOME') .. "/.local/share/nvim/lazy/vscode-js-debug",              -- Path to vscode-js-debug installation.
             -- debugger_cmd = 'js-debug-adapter' },
@@ -107,7 +107,7 @@ return {
             -- log_file_path = "(stdpath cache)/dap_vscode_js.log" -- Path for file logging
             -- log_file_level = false -- Logging level for output to file. Set to false to disable file logging.
             -- log_console_level = vim.log.levels.ERROR
-        })
+        }
 
         -- language config
         for _, language in ipairs({ 'typescript', 'javascript' }) do

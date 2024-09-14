@@ -1,6 +1,7 @@
 vim.wo.relativenumber = true
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+vim.g.have_nerd_font = true
 
 -- install package manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -25,6 +26,20 @@ require('lazy').setup({
 	'tpope/vim-sleuth',
 
 	{
+		-- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
+		-- used for completion, annotations and signatures of Neovim apis
+		'folke/lazydev.nvim',
+		ft = 'lua',
+		opts = {
+			library = {
+				-- Load luvit types when the `vim.uv` word is found
+				{ path = 'luvit-meta/library', words = { 'vim%.uv' } },
+			},
+		},
+	},
+	{ 'Bilal2453/luvit-meta', lazy = true },
+
+	{
 		-- lsp configuration & plugins
 		'neovim/nvim-lspconfig',
 		dependencies = {
@@ -36,9 +51,6 @@ require('lazy').setup({
 			-- useful status updates for lsp
 			-- note: `opts = {}` is the same as calling `require('fidget').setup({})`
 			{ 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
-
-			-- additional lua configuration, makes nvim stuff amazing!
-			'folke/neodev.nvim',
 		},
 	},
 
@@ -61,7 +73,7 @@ require('lazy').setup({
 	},
 
 	-- useful plugin to show you pending keybinds.
-	{ 'folke/which-key.nvim',  opts = {} },
+	{ 'folke/which-key.nvim', opts = {} },
 	{
 		-- adds git related signs to the gutter, as well as utilities for managing changes
 		'lewis6991/gitsigns.nvim',
@@ -75,11 +87,15 @@ require('lazy').setup({
 				changedelete = { text = '~' },
 			},
 			on_attach = function(bufnr)
-				vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk,
+				local gitsigns = require 'gitsigns'
+				vim.keymap.set('n', '<leader>hp', gitsigns.preview_hunk,
 					{ buffer = bufnr, desc = 'preview git hunk' })
-				vim.keymap.set('n', '<leader>hb', require('gitsigns').toggle_current_line_blame,
+				vim.keymap.set('n', '<leader>hb', gitsigns.toggle_current_line_blame,
 					{ buffer = bufnr, desc = 'toggle git blame' })
-				vim.keymap.set('n', '<leader>hd', require('gitsigns').diffthis, { buffer = bufnr, desc = 'diff' })
+				vim.keymap.set('n', '<leader>hd', gitsigns.diffthis, { buffer = bufnr, desc = 'diff' })
+				vim.keymap.set('n', '<leader>hD', function()
+					gitsigns.diffthis '@'
+				end, { buffer = bufnr, desc = 'diff against last commit' })
 
 				-- don't override the built-in and fugitive keymaps
 				local gs = package.loaded.gitsigns
@@ -98,33 +114,14 @@ require('lazy').setup({
 	},
 
 	{
-		-- theme inspired by atom
-		'navarasu/onedark.nvim',
-		priority = 1000,
-		config = function()
-			vim.cmd.colorscheme 'onedark'
-		end,
-	},
-
-	{
-		-- set lualine as statusline
-		'nvim-lualine/lualine.nvim',
-		opts = {
-			options = {
-				icons_enabled = true,
-				theme = 'onedark',
-				component_separators = '|',
-				section_separators = '',
-			},
-		},
-	},
-
-	{
 		-- add indentation guides even on blank lines
 		'lukas-reineke/indent-blankline.nvim',
 		main = "ibl",
 		opts = {
 			enabled = true,
+			scope = {
+				enabled = false
+			},
 			whitespace = {
 				highlight = "iblwhitespace",
 				remove_blankline_trail = true,
@@ -136,7 +133,10 @@ require('lazy').setup({
 	},
 
 	-- "gc" to comment visual regions/lines
-	{ 'numtostr/comment.nvim', opts = {} },
+	{ 'numtostr/comment.nvim',    opts = {} },
+
+	-- Highlight todo, notes, etc in comments
+	{ 'folke/todo-comments.nvim', dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
 
 	-- auto closer for brackets
 	{
@@ -199,15 +199,16 @@ require('lazy').setup({
 		},
 		build = ':tsupdate',
 	},
-
 	{
 		'nvim-treesitter/nvim-treesitter-context',
 		build = ':tscontextenable',
 	},
+	{
+		'nvim-treesitter/nvim-treesitter-refactor'
+	},
 
 	require 'kickstart.plugins.autoformat',
 	require 'kickstart.plugins.debug',
-
 	{ import = 'custom.plugins' },
 }, {})
 
@@ -217,6 +218,7 @@ set.softtabstop = 4
 set.shiftwidth = 4
 set.expandtab = false
 set.scrolloff = 8
+set.cursorline = true
 
 -- set highlight on search
 vim.o.hlsearch = false
@@ -355,13 +357,14 @@ vim.keymap.set('n', "<leader>sa", ":", { desc = '[S]earch [A]action' })
 require('nvim-treesitter.configs').setup({
 	-- Add languages to be installed here that you want installed for treesitter
 	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim',
-		'kotlin', 'java', 'yaml' },
+		'kotlin', 'java', 'yaml', 'bash', 'markdown', 'query', 'comment' },
 
 	-- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
 	auto_install = true,
 
 	highlight = { enable = true },
-	indent = { enable = true },
+	-- NOTE: it breaks go lang indent, try to enable it some time later
+	indent = { enable = true, disable = { "go", "lua" } },
 	incremental_selection = {
 		enable = true,
 		keymaps = {
@@ -415,6 +418,13 @@ require('nvim-treesitter.configs').setup({
 			},
 		},
 	},
+	refactor = {
+		highlight_definitions = {
+			enable = true,
+			-- Set to false if you have an `updatetime` of ~100.
+			clear_on_cursor_move = true,
+		},
+	},
 })
 
 -- Diagnostic keymaps
@@ -424,7 +434,7 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open float
 vim.keymap.set('n', '<leader>q', '<Cmd>TroubleToggle document_diagnostics<CR>', { desc = 'Open diagnostics list' })
 
 -- [[ Configure LSP ]]
-local on_attach = function(_, bufnr)
+local on_attach = function(client, bufnr)
 	local nmap = function(keys, func, desc)
 		if desc then
 			desc = 'LSP: ' .. desc
@@ -460,29 +470,50 @@ local on_attach = function(_, bufnr)
 	vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
 		vim.lsp.buf.format()
 	end, { desc = 'Format current buffer with LSP' })
+
+	-- Activate inline hints
+	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+		vim.lsp.inlay_hint.enable(true)
+		nmap('<leader>th', function()
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr })
+		end, '[T]oggle Inlay [H]ints')
+	end
 end
 
--- Enable the following language servers
---  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
---
---  Add any additional override configuration in the following tables. They will be passed to
---  the `settings` field of the server config. You must look up that documentation yourself.
---
---  If you want to override the default filetypes that your language server will attach to you can
---  define the property 'filetypes' to the map in question.
 local servers = {
 	-- rust_analyzer = {},
 	docker_compose_language_service = {},
 	dockerls = {},
 	eslint = {},
 	golangci_lint_ls = {},
-	gopls = {},
+	gopls = {
+		gopls = {
+			semanticTokens = true,
+			analyses = {
+				shadow = true,
+				useany = false
+			},
+			staticcheck = true,
+			hints = {
+				assignVariableTypes = true,
+				compositeLiteralFields = true,
+				compositeLiteralTypes = true,
+				constantValues = true,
+				functionTypeParameters = true,
+				parameterNames = true,
+				rangeVariableTypes = true,
+			},
+		}
+	},
+	templ = {},
 	gradle_ls = {},
+	helm_ls = {},
 	html = { filetypes = { 'html', 'twig', 'hbs' } },
 	jsonls = {},
 	kotlin_language_server = {},
-	tsserver = {},
+	ts_ls = {},
 	sqlls = {},
+	-- marksman = {},
 	lua_ls = {
 		Lua = {
 			workspace = { checkThirdParty = false },
@@ -490,9 +521,6 @@ local servers = {
 		},
 	},
 }
-
--- Setup neovim lua configuration
-require('neodev').setup()
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -502,7 +530,7 @@ capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
-	ensure_installed = vim.tbl_keys(servers),
+	ensure_installed = vim.tbl_keys(servers)
 }
 
 mason_lspconfig.setup_handlers {
@@ -559,6 +587,11 @@ cmp.setup {
 		end, { 'i', 's' }),
 	},
 	sources = {
+		{
+			name = 'lazydev',
+			-- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
+			group_index = 0,
+		},
 		{ name = 'nvim_lsp' },
 		{ name = 'nvim_lsp_signature_help' },
 		{ name = 'luasnip' },

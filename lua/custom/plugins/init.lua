@@ -92,9 +92,9 @@ return {
 					enabled = true,
 					ruler = false, -- disables the ruler text in the cmd line area
 					showcmd = false, -- disables the command in the last line of the screen
-					laststatus = 0, -- turn off the statusline in zen mode
+					laststatus = 1, -- turn off the statusline in zen mode
 				},
-				gitsigns = { enabled = false },
+				gitsigns = { enabled = true },
 				tmux = { enabled = false },
 			},
 			-- callback where you can add custom code when the Zen window opens
@@ -163,5 +163,46 @@ return {
 	},
 	{
 		"mbbill/undotree"
-	}
+	},
+
+	{
+		-- theme inspired by atom
+		'navarasu/onedark.nvim',
+		priority = 1000,
+		config = function()
+			vim.cmd.colorscheme 'onedark'
+		end,
+	},
+	-- {
+	-- 	'Mofiqul/dracula.nvim',
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		vim.cmd.colorscheme 'dracula-soft'
+	-- 	end,
+	-- },
+	--
+	-- {
+	-- 	'xiantang/darcula-dark.nvim',
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		vim.cmd.colorscheme 'darcula-dark'
+	-- 	end,
+	-- },
+
+	{
+		-- set lualine as statusline
+		'nvim-lualine/lualine.nvim',
+		opts = {
+			options = {
+				icons_enabled = true,
+				theme = 'onedark',
+				component_separators = '|',
+				section_separators = '',
+			},
+		},
+	},
+	-- {
+	--  -- nice scrolling
+	-- 	"psliwka/vim-smoothie"
+	-- }
 }
