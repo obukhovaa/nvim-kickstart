@@ -583,6 +583,7 @@ vim.keymap.set('n', '<leader>O', 'O<Esc>0"_D', { desc = 'Insert blank line' })
 vim.keymap.set('n', '<leader>F', vim.cmd.UndotreeToggle, { desc = 'Toggle undotree' })
 -- Neotree mappings
 vim.keymap.set('n', '<leader>f', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle filetree' })
+vim.keymap.set('n', '<leader>gg', '<Cmd>Neotree float git_status<CR>', { desc = 'Toggle [2G]it tree' })
 -- Zenmode
 vim.keymap.set('n', '<leader><Home>', '<Cmd>ZenMode<CR>', { desc = 'Toggle zenmode' })
 -- Ollama gen.nvim
