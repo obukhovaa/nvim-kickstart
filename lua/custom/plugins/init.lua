@@ -99,6 +99,9 @@ return {
     -- Markdown files preview
     {
         'iamcco/markdown-preview.nvim',
+        cond = function(_)
+            return vim.g.use_complete_setup
+        end,
         cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
         ft = { 'markdown' },
         build = function()

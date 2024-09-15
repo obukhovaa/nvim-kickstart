@@ -24,11 +24,12 @@ if [ "$has_apk" = false -a "$has_apt" = false ]; then
 elif [ "$has_apk" = true ]; then
     pkg_manager="apk"
     add_cmd="add"
+    # add gcc, usually it is missing on alpine
+    apk add build-base
 else
     pkg_manager="apt"
     add_cmd="install"
 fi
-
 $pkg_manager update
 
 if ! command -v git &>/dev/null; then
@@ -48,4 +49,4 @@ if [ ! -d "$HOME/.config/nvim" ]; then
     git clone https://github.com/obukhovaa/nvim-kickstart.git nvim
 fi
 
-echo "done; use `nvim .` to start"
+echo "done; use nvim to start"
