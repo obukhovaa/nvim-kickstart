@@ -14,7 +14,7 @@ return {
             },
         },
         opts = {
-            notify_on_error = false,
+            notify_on_error = true,
             notify_no_formatters = true,
             format_on_save = function(bufnr)
                 -- Disable "format_on_save lsp_fallback" for languages that don't
@@ -40,6 +40,8 @@ return {
                 javascript = { 'prettierd', 'prettier', stop_after_first = true, lsp_format = 'fallback' },
                 typescript = { 'prettierd', lsp_format = 'fallback' },
                 css = { 'prettierd', lsp_format = 'fallback' },
+                sh = { 'shfmt', lsp_format = 'fallback' },
+                bash = { 'shfmt', lsp_format = 'fallback' },
             },
         },
     },

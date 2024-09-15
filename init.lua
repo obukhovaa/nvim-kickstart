@@ -69,6 +69,10 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+function is_complete_setup(_)
+    return vim.g.use_complete_setup
+end
+
 require('lazy').setup({
     -- git related plugins
     'tpope/vim-fugitive',
@@ -82,6 +86,7 @@ require('lazy').setup({
         -- used for completion, annotations and signatures of Neovim apis
         'folke/lazydev.nvim',
         ft = 'lua',
+        cond = is_complete_setup,
         opts = {
             library = {
                 -- Load luvit types when the `vim.uv` word is found
@@ -94,6 +99,7 @@ require('lazy').setup({
     {
         -- lsp configuration & plugins
         'neovim/nvim-lspconfig',
+        cond = is_complete_setup,
         dependencies = {
             -- automatically install lsps to stdpath for neovim
             { 'williamboman/mason.nvim', config = true },
@@ -170,9 +176,11 @@ require('lazy').setup({
                     'black',
                     'gofumpt',
                     'goimports',
+                    'shfmt',
                 }
                 servers = {
                     -- rust_analyzer = {},
+                    bashls = {},
                     docker_compose_language_service = {},
                     dockerls = {},
                     eslint = {},
@@ -224,15 +232,14 @@ require('lazy').setup({
             else
                 lsp_dependencies = {
                     'stylua',
-                    'prettierd',
-                    'isort',
-                    'black',
+                    -- 'prettierd',
+                    -- 'isort',
+                    -- 'black',
                     'gofumpt',
                     'goimports',
+                    'shfmt',
                 }
                 servers = {
-                    dockerls = {},
-                    eslint = {},
                     gopls = {
                         settings = {
                             gopls = {
@@ -254,8 +261,6 @@ require('lazy').setup({
                             },
                         },
                     },
-                    helm_ls = {},
-                    sqlls = {},
                     lua_ls = {
                         settings = {
                             Lua = {
@@ -296,6 +301,7 @@ require('lazy').setup({
     {
         -- autocompletion
         'hrsh7th/nvim-cmp',
+        cond = is_complete_setup,
         dependencies = {
             -- snippet engine & its associated nvim-cmp source
             'l3mon4d3/luasnip',
@@ -389,7 +395,12 @@ require('lazy').setup({
     { 'numtostr/comment.nvim', opts = {} },
 
     -- Highlight todo, notes, etc in comments
-    { 'folke/todo-comments.nvim', dependencies = { 'nvim-lua/plenary.nvim' }, opts = {} },
+    {
+        'folke/todo-comments.nvim',
+        cond = is_complete_setup,
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        opts = {},
+    },
 
     -- auto closer for brackets
     {
@@ -481,6 +492,7 @@ require('lazy').setup({
     {
         'nvim-neo-tree/neo-tree.nvim',
         branch = 'v3.x',
+        cond = is_complete_setup,
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
