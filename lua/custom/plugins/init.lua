@@ -2,13 +2,14 @@ return {
     -- Ollama GPT
     {
         'David-Kunz/gen.nvim',
+        cond = vim.g.use_complete_setup,
         opts = {
             model = 'deepseek-coder-v2:latest', -- The default model to use.
             host = 'localhost', -- The host running the Ollama service.
             port = '11434', -- The port on which the Ollama service is listening.
             quit_map = 'q', -- set keymap for close the response window
             retry_map = '<c-r>', -- set keymap to re-send the current prompt
-            init = function(options)
+            init = function(_)
                 pcall(io.popen, 'ollama serve > /dev/null 2>&1 &')
             end,
             -- Function to initialize Ollama
@@ -28,29 +29,9 @@ return {
             debug = false, -- Prints errors and the command which is run.
         },
     },
-    'obukhovaa/gotests-vim', -- generates go test templates
     {
-        'mhartington/formatter.nvim', -- ktlint for koltin sources
-        opts = function()
-            local ktlint = require('formatter.filetypes.kotlin').ktlint
-            return {
-                logging = true,
-                log_level = vim.log.levels.WARN,
-                filetypes = {
-                    kotlin = {
-                        ktlint(),
-                    },
-
-                    -- Use the special "*" filetype for defining formatter configurations on
-                    -- any filetype
-                    -- ["*"] = {
-                    -- "formatter.filetypes.any" defines default configurations for any
-                    -- filetype
-                    -- require("formatter.filetypes.any").remove_trailing_whitespace
-                    -- }
-                },
-            }
-        end,
+        'obukhovaa/gotests-vim', -- generates go test templates
+        cond = vim.g.use_complete_setup,
     },
     {
         'folke/trouble.nvim',

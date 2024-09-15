@@ -1,3 +1,5 @@
+-- TODO: use it in `cond` block of plugins that should not be installed on the remote host
+vim.g.use_complete_setup = vim.env.USE_COMPLETE_NVIM_SETUP == 'true'
 vim.wo.relativenumber = true
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -157,73 +159,122 @@ require('lazy').setup({
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
-            local servers = {
-                -- rust_analyzer = {},
-                docker_compose_language_service = {},
-                dockerls = {},
-                eslint = {},
-                golangci_lint_ls = {},
-                gopls = {
-                    settings = {
-                        gopls = {
-                            semanticTokens = true,
-                            analyses = {
-                                shadow = true,
-                                useany = false,
-                            },
-                            staticcheck = true,
-                            hints = {
-                                assignVariableTypes = true,
-                                compositeLiteralFields = true,
-                                compositeLiteralTypes = true,
-                                constantValues = true,
-                                functionTypeParameters = true,
-                                parameterNames = true,
-                                rangeVariableTypes = true,
+            local servers = nil
+            local lsp_dependencies = nil
+            if vim.g.use_complete_setup then
+                lsp_dependencies = {
+                    'stylua',
+                    'ktlint',
+                    'prettierd',
+                    'isort',
+                    'black',
+                    'gofumpt',
+                    'goimports',
+                }
+                servers = {
+                    -- rust_analyzer = {},
+                    docker_compose_language_service = {},
+                    dockerls = {},
+                    eslint = {},
+                    golangci_lint_ls = {},
+                    gopls = {
+                        settings = {
+                            gopls = {
+                                semanticTokens = true,
+                                analyses = {
+                                    shadow = true,
+                                    useany = false,
+                                },
+                                staticcheck = true,
+                                hints = {
+                                    assignVariableTypes = true,
+                                    compositeLiteralFields = true,
+                                    compositeLiteralTypes = true,
+                                    constantValues = true,
+                                    functionTypeParameters = true,
+                                    parameterNames = true,
+                                    rangeVariableTypes = true,
+                                },
                             },
                         },
                     },
-                },
-                templ = {},
-                gradle_ls = {},
-                helm_ls = {},
-                html = { filetypes = { 'html', 'twig', 'hbs' } },
-                jsonls = {},
-                -- NOTE: non-responsive, jvm development without idea is a dogwater
-                -- kotlin_language_server = {},
-                ts_ls = {},
-                sqlls = {},
-                marksman = {},
-                lua_ls = {
-                    -- cmd = {...},
-                    -- filetypes = { ...},
-                    -- capabilities = {},
-                    settings = {
-                        Lua = {
-                            completion = {
-                                callSnippet = 'Replace',
+                    templ = {},
+                    gradle_ls = {},
+                    helm_ls = {},
+                    html = { filetypes = { 'html', 'twig', 'hbs' } },
+                    jsonls = {},
+                    -- NOTE: non-responsive, jvm development without idea is a dogwater
+                    -- kotlin_language_server = {},
+                    ts_ls = {},
+                    sqlls = {},
+                    marksman = {},
+                    lua_ls = {
+                        -- cmd = {...},
+                        -- filetypes = { ...},
+                        -- capabilities = {},
+                        settings = {
+                            Lua = {
+                                completion = {
+                                    callSnippet = 'Replace',
+                                },
                             },
-                            -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-                            -- diagnostics = { disable = { 'missing-fields' } },
                         },
                     },
-                },
-            }
+                }
+            else
+                lsp_dependencies = {
+                    'stylua',
+                    'prettierd',
+                    'isort',
+                    'black',
+                    'gofumpt',
+                    'goimports',
+                }
+                servers = {
+                    dockerls = {},
+                    eslint = {},
+                    gopls = {
+                        settings = {
+                            gopls = {
+                                semanticTokens = true,
+                                analyses = {
+                                    shadow = true,
+                                    useany = false,
+                                },
+                                staticcheck = true,
+                                hints = {
+                                    assignVariableTypes = true,
+                                    compositeLiteralFields = true,
+                                    compositeLiteralTypes = true,
+                                    constantValues = true,
+                                    functionTypeParameters = true,
+                                    parameterNames = true,
+                                    rangeVariableTypes = true,
+                                },
+                            },
+                        },
+                    },
+                    helm_ls = {},
+                    sqlls = {},
+                    lua_ls = {
+                        settings = {
+                            Lua = {
+                                completion = {
+                                    callSnippet = 'Replace',
+                                },
+                            },
+                        },
+                    },
+                }
+            end
 
             -- Ensure the servers above are installed
             require('mason').setup()
             -- You can add other tools here that you want Mason to install
             -- for you, so that they are available from within Neovim.
             local ensure_installed = vim.tbl_keys(servers or {})
-            vim.list_extend(ensure_installed, {
-                'stylua',
-                'ktlint',
-                'prettierd',
-                'isort',
-                'black',
-                'gofumpt',
-                'goimports',
-            })
+
+            vim.list_extend(ensure_installed, lsp_dependencies)
             require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
             require('mason-lspconfig').setup {

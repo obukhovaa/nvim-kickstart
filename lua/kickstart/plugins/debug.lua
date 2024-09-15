@@ -1,3 +1,5 @@
+if not vim.g.use_complete_setup then return end
+
 return {
 
     'mfussenegger/nvim-dap',
