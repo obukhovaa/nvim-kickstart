@@ -1,5 +1,5 @@
 -- TODO: use it in `cond` block of plugins that should not be installed on the remote host
-vim.g.use_complete_setup = vim.env.USE_COMPLETE_NVIM_SETUP == 'true'
+vim.g.use_complete_setup = vim.env.USE_COMPLETE_NVIM_SETUP and vim.env.USE_COMPLETE_NVIM_SETUP == 'true' or false
 vim.wo.relativenumber = true
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
