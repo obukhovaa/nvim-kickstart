@@ -261,7 +261,7 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{username}
 #     - #{username_ssh}
 tmux_conf_theme_status_left=" 󰞷 #S "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage} ,},#{cpu_fg_color} #{cpu_icon} #{cpu_percentage} , %R , %d %b "
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage} ,},#{cpu_fg_color} #{cpu_icon} #{cpu_percentage} ,#{ram_fg_color} #{ram_icon} #{ram_percentage} , %R , %d %b "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
@@ -429,12 +429,21 @@ tmux_conf_uninstall_plugins_on_reload=true
 # visit https://github.com/tmux-plugins for available plugins
 #set -g @plugin 'tmux-plugins/tmux-copycat'
 
+# tmux-cpu (and ram) customisation
 set -g @cpu_low_fg_color "#[fg=#98c379]"
 set -g @cpu_medium_fg_color "#[fg=#e5c07b]"
 set -g @cpu_high_fg_color "#[fg=#e06c75]"
 set -g @cpu_low_icon "⠪"
 set -g @cpu_medium_icon "⣞"
 set -g @cpu_high_icon "⣿"
+
+set -g @ram_low_fg_color "#[fg=#98c379]"
+set -g @ram_medium_fg_color "#[fg=#e5c07b]"
+set -g @ram_high_fg_color "#[fg=#e06c75]"
+set -g @ram_low_icon "󰍛"
+set -g @ram_medium_icon "󰍛"
+set -g @ram_high_icon "󰍛"
+
 set -g @plugin 'tmux-plugins/tmux-cpu'
 
 # <prefix>+Alt+s => save, <prefix>+Alt+r => resotre
