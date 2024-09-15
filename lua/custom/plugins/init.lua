@@ -2,7 +2,9 @@ return {
     -- Ollama GPT
     {
         'David-Kunz/gen.nvim',
-        cond = vim.g.use_complete_setup,
+        cond = function(_)
+            return vim.g.use_complete_setup
+        end,
         opts = {
             model = 'deepseek-coder-v2:latest', -- The default model to use.
             host = 'localhost', -- The host running the Ollama service.
@@ -28,10 +30,17 @@ return {
             no_auto_close = false, -- Never closes the window automatically.
             debug = false, -- Prints errors and the command which is run.
         },
+        config = function()
+            -- Ollama gen.nvim
+            vim.keymap.set({ 'n', 'v' }, '<leader>`', ':Gen<CR>')
+            vim.keymap.set({ 'n' }, '<leader>~', require('gen').select_model, { desc = 'Select LLM to use' })
+        end,
     },
     {
         'obukhovaa/gotests-vim', -- generates go test templates
-        cond = vim.g.use_complete_setup,
+        cond = function(_)
+            return vim.g.use_complete_setup
+        end,
     },
     {
         'folke/trouble.nvim',

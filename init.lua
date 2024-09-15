@@ -1,5 +1,5 @@
--- TODO: use it in `cond` block of plugins that should not be installed on the remote host
-vim.g.use_complete_setup = vim.env.USE_COMPLETE_NVIM_SETUP and vim.env.USE_COMPLETE_NVIM_SETUP == 'true' or false
+vim.g.use_complete_setup = vim.env.USE_COMPLETE_NVIM_SETUP == 'true'
+
 vim.wo.relativenumber = true
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -161,7 +161,7 @@ require('lazy').setup({
 
             local servers = nil
             local lsp_dependencies = nil
-            if vim.g.use_complete_setup then
+            if vim.g.use_complete_setup == true then
                 lsp_dependencies = {
                     'stylua',
                     'ktlint',
@@ -637,9 +637,6 @@ vim.keymap.set('n', '<leader>f', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle fil
 vim.keymap.set('n', '<leader>gg', '<Cmd>Neotree float git_status<CR>', { desc = 'Toggle [2G]it tree' })
 -- Zenmode
 vim.keymap.set('n', '<leader><Home>', '<Cmd>ZenMode<CR>', { desc = 'Toggle zenmode' })
--- Ollama gen.nvim
-vim.keymap.set({ 'n', 'v' }, '<leader>`', ':Gen<CR>')
-vim.keymap.set({ 'n' }, '<leader>~', require('gen').select_model, { desc = 'Select LLM to use' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
