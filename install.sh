@@ -7,14 +7,13 @@ has_apk=false
 has_apt=false
 pkg_manager=""
 add_cmd=""
+make_pkg="build-base"
 
-if command -v apk &>/dev/null; then
-    echo "YES"
+if command -v apk; then
     has_apk=true
 fi
 
-if command -v apt &>/dev/null; then
-    echo "NO"
+if command -v apt; then
     has_apt=true
 fi
 
@@ -24,22 +23,41 @@ if [ "$has_apk" = false -a "$has_apt" = false ]; then
 elif [ "$has_apk" = true ]; then
     pkg_manager="apk"
     add_cmd="add"
-    # add gcc, usually it is missing on alpine
-    apk add build-base
 else
     pkg_manager="apt"
     add_cmd="install"
+    make_pkg="build-essential"
 fi
 $pkg_manager update
 
-if ! command -v git &>/dev/null; then
+if ! command -v make; then
+    echo "make could not be found, installing"
+    $pkg_manager $add_cmd $make_pkg
+fi
+
+if ! command -v tmux; then
+    echo "tmux could not be found, installing"
+    $pkg_manager $add_cmd tmux
+fi
+
+if ! command -v git; then
     echo "git could not be found, installing"
     $pkg_manager $add_cmd git
 fi
 
-if ! command -v nvim &>/dev/null; then
+if ! command -v curl; then
+    echo "curl could not be found, installing"
+    $pkg_manager $add_cmd curl
+fi
+
+if ! command -v nvim; then
     echo "nvim could not be found, installing"
     $pkg_manager $add_cmd neovim
+fi
+
+if ! command -v fzf; then
+    echo "fzf could not be found, installing"
+    $pkg_manager $add_cmd fzf
 fi
 
 if [ ! -d "$HOME/.config/nvim" ]; then
@@ -49,4 +67,18 @@ if [ ! -d "$HOME/.config/nvim" ]; then
     git clone https://github.com/obukhovaa/nvim-kickstart.git nvim
 fi
 
-echo "done; use nvim to start"
+cd "$HOME/.config"
+cp nvim/tmux/.tmux.conf "$HOME/.tmux.conf"
+cp nvim/tmux/.tmux.conf.local "$HOME/.tmux.conf.local"
+cp nvim/zsh/.zshrc "$HOME/.zshrc"
+
+if ! command -v zsh; then
+    echo "zsh could not be found, installing"
+    $pkg_manager $add_cmd zsh
+    chsh -s $(which zsh)
+    KEEP_ZSHRC=yes RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
+
+session_id=$(shuf -erxXabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 | head -n 2)
+tmux new -s "remote-$sessionId"
+nvim .
