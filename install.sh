@@ -76,9 +76,12 @@ if ! command -v zsh; then
     echo "zsh could not be found, installing"
     $pkg_manager $add_cmd zsh
     chsh -s $(which zsh)
-    KEEP_ZSHRC=yes RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    sh -c "KEEP_ZSHRC=yes RUNZSH=no $(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    git clone https://github.com/jeffreytse/zsh-vi-mode $ZSH_CUSTOM/plugins/zsh-vi-mode
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+    git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
 fi
 
-session_id=$(shuf -erxXabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 | head -n 2)
-tmux new -s "remote-$sessionId"
+zsh
+tmux new -s "remote"
 nvim .
