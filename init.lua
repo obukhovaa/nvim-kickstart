@@ -647,8 +647,6 @@ vim.keymap.set('n', '<leader>F', vim.cmd.UndotreeToggle, { desc = 'Toggle undotr
 -- Neotree mappings
 vim.keymap.set('n', '<leader>f', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle filetree' })
 vim.keymap.set('n', '<leader>gg', '<Cmd>Neotree float git_status<CR>', { desc = 'Toggle [2G]it tree' })
--- Zenmode
-vim.keymap.set('n', '<leader><Home>', '<Cmd>ZenMode<CR>', { desc = 'Toggle zenmode' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })

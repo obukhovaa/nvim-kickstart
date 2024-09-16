@@ -30,7 +30,7 @@ return {
             no_auto_close = false, -- Never closes the window automatically.
             debug = false, -- Prints errors and the command which is run.
         },
-        config = function()
+        init = function()
             -- Ollama gen.nvim
             vim.keymap.set({ 'n', 'v' }, '<leader>`', ':Gen<CR>')
             vim.keymap.set({ 'n' }, '<leader>~', require('gen').select_model, { desc = 'Select LLM to use' })
@@ -95,6 +95,9 @@ return {
                 vim.api.nvim_command ':!tmux set-option status on'
             end,
         },
+        init = function()
+            vim.keymap.set('n', '<leader><Home>', '<Cmd>ZenMode<CR>', { desc = 'Toggle zenmode' })
+        end,
     },
     -- Markdown files preview
     {
@@ -217,13 +220,27 @@ return {
         config = function()
             require('onedarkpro').setup {
                 colors = {
-                    cursorline = '#2d313b',
+                    dark = {
+                        cursorline = '#2d313b',
+                    },
+                    light = {
+                        cursorline = '#f0f0f0',
+                    },
                 },
                 options = {
                     cursorline = true,
                 },
             }
             vim.cmd.colorscheme 'onedark'
+            vim.api.nvim_create_user_command('ToggleTheme', function()
+                if vim.o.background == 'dark' then
+                    vim.cmd 'colorscheme onelight'
+                else
+                    vim.cmd 'colorscheme onedark'
+                end
+            end, {})
+
+            vim.keymap.set('n', '<leader><End>', '<Cmd>ToggleTheme<CR>', { desc = 'Toggle theme' })
         end,
     },
     {
@@ -232,7 +249,7 @@ return {
         opts = {
             options = {
                 icons_enabled = true,
-                theme = 'onedark',
+                theme = 'auto',
                 component_separators = '|',
                 section_separators = '',
             },
