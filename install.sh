@@ -25,14 +25,17 @@ elif [ "$has_apk" = true ]; then
     add_cmd="add"
 else
     pkg_manager="apt"
-    add_cmd="install"
+    add_cmd="install -y"
     make_pkg="build-essential"
 fi
 $pkg_manager update
 
-if ! command -v make; then
-    echo "make could not be found, installing"
-    $pkg_manager $add_cmd $make_pkg
+# skip heavy binaries, mainly required to build telescope-fzf-native
+if use_complete_setup = true; then
+    if ! command -v make; then
+        echo "make could not be found, installing"
+        $pkg_manager $add_cmd $make_pkg
+    fi
 fi
 
 if ! command -v tmux; then
@@ -53,6 +56,11 @@ fi
 if ! command -v nvim; then
     echo "nvim could not be found, installing"
     $pkg_manager $add_cmd neovim
+fi
+
+if ! command -v rg; then
+    echo "ripgrep could not be found, installing"
+    $pkg_manager $add_cmd ripgrep
 fi
 
 if ! command -v fzf; then
@@ -76,12 +84,11 @@ if ! command -v zsh; then
     echo "zsh could not be found, installing"
     $pkg_manager $add_cmd zsh
     chsh -s $(which zsh)
-    sh -c "KEEP_ZSHRC=yes RUNZSH=no $(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    git clone https://github.com/jeffreytse/zsh-vi-mode $ZSH_CUSTOM/plugins/zsh-vi-mode
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
-    git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+    KEEP_ZSHRC=yes RUNZSH=no sh -c '$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)'
+    git clone https://github.com/jeffreytse/zsh-vi-mode ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-vi-mode
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 fi
 
-zsh
-tmux new -s "remote"
+tmux new -s remote 'zsh'
 nvim .
