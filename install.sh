@@ -68,6 +68,11 @@ if ! command -v fzf; then
     $pkg_manager $add_cmd fzf
 fi
 
+if ! command -v perl; then
+    echo "perl could not be found, installing"
+    $pkg_manager $add_cmd perl
+fi
+
 if [ ! -d "$HOME/.config/nvim" ]; then
     echo "$HOME/.config/nvim doesn't exist, creating and cloning..."
     mkdir -p "$HOME/.config"
@@ -91,4 +96,3 @@ if ! command -v zsh; then
 fi
 
 tmux new -s remote 'zsh'
-nvim .

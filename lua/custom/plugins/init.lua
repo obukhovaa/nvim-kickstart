@@ -1,10 +1,12 @@
+local function is_complete_setup(_)
+    return vim.g.use_complete_setup
+end
+
 return {
     -- Ollama GPT
     {
         'David-Kunz/gen.nvim',
-        cond = function(_)
-            return vim.g.use_complete_setup
-        end,
+        cond = is_complete_setup(),
         opts = {
             model = 'deepseek-coder-v2:latest', -- The default model to use.
             host = 'localhost', -- The host running the Ollama service.
@@ -38,9 +40,7 @@ return {
     },
     {
         'obukhovaa/gotests-vim', -- generates go test templates
-        cond = function(_)
-            return vim.g.use_complete_setup
-        end,
+        cond = is_complete_setup(),
     },
     {
         'folke/trouble.nvim',
@@ -102,9 +102,7 @@ return {
     -- Markdown files preview
     {
         'iamcco/markdown-preview.nvim',
-        cond = function(_)
-            return vim.g.use_complete_setup
-        end,
+        cond = is_complete_setup(),
         cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
         ft = { 'markdown' },
         build = function()
@@ -168,6 +166,21 @@ return {
                 -- Configuration here, or leave empty to use defaults
             }
         end,
+    },
+    {
+        -- integration with ssh, docker and other remote providers
+        'miversen33/netman.nvim',
+        cond = is_complete_setup(),
+        dependencies = {
+            'nvim-neo-tree/neo-tree.nvim',
+        },
+    },
+    {
+        'mrbjarksen/neo-tree-diagnostics.nvim',
+        cond = is_complete_setup(),
+        dependencies = {
+            'nvim-neo-tree/neo-tree.nvim',
+        },
     },
     {
         'mbbill/undotree',

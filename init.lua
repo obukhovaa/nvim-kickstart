@@ -5,17 +5,13 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
-local set = vim.opt -- set options
+local set = vim.opt
 set.tabstop = 4
 set.softtabstop = 4
 set.shiftwidth = 4
 set.expandtab = false
 set.scrolloff = 8
 set.cursorline = true
-
--- Configure how new splits should be opened
--- vim.opt.splitright = true
--- vim.opt.splitbelow = true
 
 -- set highlight on search
 vim.o.hlsearch = false
@@ -69,7 +65,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-function is_complete_setup(_)
+local function is_complete_setup(_)
     return vim.g.use_complete_setup
 end
 
@@ -499,6 +495,7 @@ require('lazy').setup({
             'nvim-lua/plenary.nvim',
             'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
             'muniftanjim/nui.nvim',
+            'mbbill/undotree',
         },
         opts = {
             filesystem = {
@@ -507,7 +504,7 @@ require('lazy').setup({
                     leave_dirs_open = true,
                 },
                 filtered_items = {
-                    visible = true,
+                    visible = false,
                     show_hidden_count = true,
                     hide_dotfiles = false,
                     hide_gitignored = true,
@@ -516,6 +513,39 @@ require('lazy').setup({
                         '.DS_Store',
                     },
                     never_show = {},
+                },
+            },
+            sources = {
+                'filesystem',
+                'buffers',
+                'git_status',
+                'diagnostics',
+                'netman.ui.neo-tree',
+            },
+            source_selector = {
+                winbar = false,
+                statusline = false,
+                sources = {
+                    {
+                        source = 'filesystem',
+                        display_name = ' 󰉓 ',
+                    },
+                    {
+                        source = 'buffers',
+                        display_name = ' 󰈚 ',
+                    },
+                    {
+                        source = 'git_status',
+                        display_name = ' 󰊢 ',
+                    },
+                    {
+                        source = 'diagnostics',
+                        display_name = '  ',
+                    },
+                    {
+                        source = 'remote',
+                        display_name = ' 󰢹 ',
+                    },
                 },
             },
         },
@@ -659,7 +689,9 @@ vim.keymap.set('n', '<leader>O', 'O<Esc>0"_D', { desc = 'Insert blank line' })
 vim.keymap.set('n', '<leader>F', vim.cmd.UndotreeToggle, { desc = 'Toggle undotree' })
 -- Neotree mappings
 vim.keymap.set('n', '<leader>f', '<Cmd>Neotree toggle<CR>', { desc = 'Toggle filetree' })
-vim.keymap.set('n', '<leader>gg', '<Cmd>Neotree float git_status<CR>', { desc = 'Toggle [2G]it tree' })
+vim.keymap.set('n', '<leader>gg', '<Cmd>Neotree float git_status<CR>', { desc = 'Toggle [2g]it tree' })
+vim.keymap.set('n', '<leader>ge', '<Cmd>Neotree float diagnostics<CR>', { desc = 'To[g]gl[e] diagnostics window' })
+vim.keymap.set('n', '<leader>gr', '<Cmd>Neotree float remote<CR>', { desc = 'To[g]gle [r]emote window' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
