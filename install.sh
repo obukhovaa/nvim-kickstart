@@ -1,7 +1,10 @@
 #!/bin/sh
 
-use_complete_setup="${USE_COMPLETE_NVIM_SETUP:-false}"
-export USE_COMPLETE_NVIM_SETUP="$use_complete_setup"
+# with lsp and etc.
+use_complete_nvim_setup="${USE_COMPLETE_NVIM_SETUP:-false}"
+export USE_COMPLETE_NVIM_SETUP="$use_complete_nvim_setup"
+# only zsh and tmux
+is_minimal="${MINIMAL_SETUP:-false}"
 
 has_apk=false
 has_apt=false
@@ -31,11 +34,16 @@ fi
 $pkg_manager update
 
 # skip heavy binaries, mainly required to build telescope-fzf-native
-if use_complete_setup = true; then
+if [ "$use_complete_nvim_setup" = true -a "$is_minimal" -ne true]; then
     if ! command -v make; then
         echo "make could not be found, installing"
         $pkg_manager $add_cmd $make_pkg
     fi
+fi
+
+if ! command -v bash; then
+    echo "bash could not be found, installing"
+    $pkg_manager $add_cmd bash
 fi
 
 if ! command -v tmux; then
@@ -54,8 +62,10 @@ if ! command -v curl; then
 fi
 
 if ! command -v nvim; then
-    echo "nvim could not be found, installing"
-    $pkg_manager $add_cmd neovim
+    if [ "$is_minimal" -ne true ]; then
+        echo "nvim could not be found, installing"
+        $pkg_manager $add_cmd neovim
+    fi
 fi
 
 if ! command -v rg; then
@@ -88,8 +98,12 @@ cp nvim/zsh/.zshrc "$HOME/.zshrc"
 if ! command -v zsh; then
     echo "zsh could not be found, installing"
     $pkg_manager $add_cmd zsh
-    chsh -s $(which zsh)
-    KEEP_ZSHRC=yes RUNZSH=no sh -c '$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)'
+    curl -o ohmyz.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    chmod +x ohmyz.sh
+    if ! command -v chsh; then
+        $pkg_manager $add_cmd shadow
+    fi
+    KEEP_ZSHRC=yes RUNZSH=no CHSH=yes sh ohmyz.sh
     git clone https://github.com/jeffreytse/zsh-vi-mode ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-vi-mode
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
