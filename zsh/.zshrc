@@ -126,8 +126,14 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-alias c2_hpa="watch -n 10 kubectl -n c2 get hpa"
-alias c2_release="helm -n c2 history c2"
+function kdig { 
+	local target_pods="$(kubectl -n $1 get pods | grep "$2")"
+	local pod_name="$(awk '{ print $1;exit;}' <<< $target_pods)"
+	echo "uploading tools to $pod_name ..."
+	kubectl cp ~/.config/nvim/install.sh "$1"/"$pod_name":/tmp/install.sh
+	echo "connecting to $pod_name"
+	kubectl -n "$1" exec -ti $pod_name -- sh -c 'cd /tmp && chmod +x install.sh && ./install.sh'
+}
 
 function kexec { 
 	local target_pods="$(kubectl -n $1 get pods | grep "$2")"
@@ -153,16 +159,24 @@ function ksvc {
 }
 
 function klog {
-	if [ -z "$1" ]
+	if [ -z "$2" ]
 	then
 		echo "deployment is not provided"
 		return 1
 	fi
 	
-	local ns="sandbox-c2"
-	if [ -z "$2" ]; then ns="c2"; fi
-	kubectl -n c2 logs -f "$(kubectl -n $ns get pods | grep $1 | awk '{print $1; exit;}')"
+	kubectl -n "$1" logs -f "$(kubectl -n $1 get pods | grep $2 | awk '{print $1; exit;}')"
 }
+
+function encrypt_pwd() {
+	openssl enc -in "$1" -aes-256-cbc -p -pass stdin -out "$1.sec"
+}
+
+function decrypt_pwd() {
+	local in="$1"
+	openssl enc -in "$in" -aes-256-cbc -d -pass stdin -out ${in%$'.sec'}
+}
+
 
 bindkey "\e\eOD" backward-word 
 bindkey "\e\eOC" forward-word
