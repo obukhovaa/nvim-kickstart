@@ -140,7 +140,7 @@ function kdig {
 	kubectl cp ~/.config/nvim/install.sh "$1"/"$pod_name":/tmp/install.sh
 	echo "connecting to $pod_name"
 	if [ "$is_minimal" = true ]; then
-		kubectl -n "$1" exec -ti $pod_name -- sh -c 'export IS_MINIMAL=true && cd /tmp && chmod +x install.sh && ./install.sh'
+		kubectl -n "$1" exec -ti $pod_name -- sh -c 'export MINIMAL_SETUP=true && cd /tmp && chmod +x install.sh && ./install.sh'
 	else
 		kubectl -n "$1" exec -ti $pod_name -- sh /tmp/install.sh
 	fi

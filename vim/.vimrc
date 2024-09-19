@@ -1,5 +1,25 @@
 set nocompatible
 
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+call plug#begin()
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rhubarb'
+Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-sleuth'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-commentary'
+Plug 'fxn/vim-monochrome'
+Plug 'itchyny/lightline.vim'
+Plug 'mbbill/undotree'
+Plug 'junegunn/goyo'
+Plug 'junegunn/limelight'
+call plug#end()
+
 let mapleader = " "
 
 filetype plugin on
@@ -12,12 +32,8 @@ set noerrorbells
 set t_vb=
 set tm=500
 
-set foldcolumn=1 " Add a bit extra margin to the left
-set showmode " Always show what mode we're currently editing in
-
-" TODO install plugins
-" set commentary
-" set surround 
+"set foldcolumn=1 " Add a bit extra margin to the left
+"set showmode " Always show what mode we're currently editing in
 
 " Linebreak on 500 characters
 set lbr
@@ -74,9 +90,13 @@ set clipboard=unnamedplus
 set completeopt=menuone,noselect
 
 " editor layout
-set background=dark
+colorscheme monochrome
+let g:lightline = {
+      \ 'colorscheme': 'nord',
+      \ }
+" set background=dark
 set termguicolors
-set signcolumn=yes
+" set signcolumn=yes
 set termencoding=utf-8
 set encoding=utf-8
 set lazyredraw                  " don't update the display while executing macros
@@ -107,3 +127,7 @@ nmap n nzzzv
 nmap N Nzzzv
 " paster without buffer replace
 vnoremap <leader>p "_dP
+" plugins
+nmap <leader><Home> <Cmd>Goyo<cr>
+nmap <leader><Home> <Cmd>Limelight!! 0.25<cr>
+nnoremap <leader>F :UndotreeToggle<CR>
