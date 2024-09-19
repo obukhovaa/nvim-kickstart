@@ -16,8 +16,8 @@ Plug 'tpope/vim-commentary'
 Plug 'fxn/vim-monochrome'
 Plug 'itchyny/lightline.vim'
 Plug 'mbbill/undotree'
-Plug 'junegunn/goyo'
-Plug 'junegunn/limelight'
+Plug 'junegunn/goyo.vim'
+Plug 'junegunn/limelight.vim'
 call plug#end()
 
 let mapleader = " "
@@ -130,4 +130,4 @@ vnoremap <leader>p "_dP
 " plugins
 nmap <leader><Home> <Cmd>Goyo<cr>
 nmap <leader><Home> <Cmd>Limelight!! 0.25<cr>
-nnoremap <leader>F :UndotreeToggle<CR>
+nnoremap <leader>F <Cmd>UndotreeToggle<cr>
