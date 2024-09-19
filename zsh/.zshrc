@@ -129,7 +129,7 @@ source $ZSH/oh-my-zsh.sh
 function kdig {
 	local is_minimal=true
 	if [ ! -z "$3" ]; then
-		if [ "$3" -eq "-d" -o "$3" -eq "--deep" ]; then 
+		if [ "$3" = "-d" -o "$3" = "--deep" ]; then 
 			is_minimal=false
 		fi
 	fi
