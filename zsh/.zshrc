@@ -126,13 +126,24 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-function kdig { 
+function kdig {
+	local is_minimal=true
+	if [ ! -z "$3" ]; then
+		if [ "$3" -eq "-d" -o "$3" -eq "--deep" ]; then 
+			is_minimal=false
+		fi
+	fi
+
 	local target_pods="$(kubectl -n $1 get pods | grep "$2")"
 	local pod_name="$(awk '{ print $1;exit;}' <<< $target_pods)"
 	echo "uploading tools to $pod_name ..."
 	kubectl cp ~/.config/nvim/install.sh "$1"/"$pod_name":/tmp/install.sh
 	echo "connecting to $pod_name"
-	kubectl -n "$1" exec -ti $pod_name -- sh -c 'cd /tmp && chmod +x install.sh && ./install.sh'
+	if [ "$is_minimal" = true ]; then
+		kubectl -n "$1" exec -ti $pod_name -- sh -c 'export IS_MINIMAL=true && cd /tmp && chmod +x install.sh && ./install.sh'
+	else
+		kubectl -n "$1" exec -ti $pod_name -- sh /tmp/install.sh
+	fi
 }
 
 function kexec { 

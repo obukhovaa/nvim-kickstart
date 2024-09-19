@@ -1,9 +1,10 @@
-if not vim.g.use_complete_setup then return {} end
+if not vim.g.use_complete_setup then
+    return {}
+end
 
 return {
 
     'mfussenegger/nvim-dap',
-    -- NOTE: And you can specify dependencies as well
     dependencies = {
         -- Creates a beautiful debugger UI
         'rcarriga/nvim-dap-ui',
@@ -99,7 +100,7 @@ return {
             -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
             debugger_path = os.getenv 'HOME' .. '/.local/share/nvim/lazy/vscode-js-debug', -- Path to vscode-js-debug installation.
             -- debugger_cmd = 'js-debug-adapter' },
-            adapters = { 'pwa-node', 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost' }, -- which adapters to register in nvim-dap
+            adapters = { 'chrome', 'node', 'pwa-node', 'pwa-chrome', 'node-terminal', 'pwa-extensionHost' }, -- which adapters to register in nvim-dap
             -- log_file_path = "(stdpath cache)/dap_vscode_js.log" -- Path for file logging
             -- log_file_level = false -- Logging level for output to file. Set to false to disable file logging.
             -- log_console_level = vim.log.levels.ERROR
@@ -136,22 +137,6 @@ return {
                 {
                     type = 'pwa-node',
                     request = 'launch',
-                    name = 'Launch Current File (pwa-node ts-node-dev)',
-                    cwd = vim.fn.getcwd(),
-                    runtimeExecutable = 'ts-node-dev',
-                    runtimeArgs = { '--respawn', '--loader', 'ts-node/esm' },
-                    args = { '${file}' },
-                    sourceMaps = true,
-                    protocol = 'inspector',
-                    skipFiles = { '<node_internals>/**', 'node_modules/**' },
-                    resolveSourceMapLocations = {
-                        '${workspaceFolder}/**',
-                        '!**/node_modules/**',
-                    },
-                },
-                {
-                    type = 'pwa-node',
-                    request = 'launch',
                     name = 'Launch Test Current File (pwa-node with jest)',
                     cwd = vim.fn.getcwd(),
                     runtimeArgs = { '${workspaceFolder}/node_modules/.bin/jest' },
@@ -162,6 +147,21 @@ return {
                     console = 'integratedTerminal',
                     internalConsoleOptions = 'neverOpen',
                     skipFiles = { '<node_internals>/**', 'node_modules/**' },
+                },
+                -- node --inspect ./app.js ; then F5 and `Attach to the process`
+                {
+                    type = 'pwa-node',
+                    request = 'attach',
+                    name = 'Attach to the process',
+                    processId = require('dap.utils').pick_process,
+                    cwd = '${workspaceFolder}',
+                },
+                {
+                    type = 'pwa-chrome',
+                    request = 'launch',
+                    name = 'Start Chrome with "localhost"',
+                    url = 'http://localhost:3000',
+                    webRoot = '${workspaceFolder}',
                 },
                 {
                     name = 'Wrangler',
