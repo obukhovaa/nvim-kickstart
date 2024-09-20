@@ -128,4 +128,4 @@ if ! command -v zsh; then
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 fi
 
-tmux new -s remote 'zsh'
+tmux new -s rmte 'zsh'

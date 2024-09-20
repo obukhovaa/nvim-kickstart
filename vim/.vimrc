@@ -129,5 +129,5 @@ nmap N Nzzzv
 vnoremap <leader>p "_dP
 " plugins
 nmap <leader><Home> <Cmd>Goyo<cr>
-nmap <leader><Home> <Cmd>Limelight!! 0.25<cr>
+nmap <leader><End> <Cmd>Limelight!! 0.25<cr>
 nnoremap <leader>F <Cmd>UndotreeToggle<cr>
