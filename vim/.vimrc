@@ -91,7 +91,11 @@ set clipboard=unnamedplus
 set completeopt=menuone,noselect
 
 " editor layout
-colorscheme retrobox
+try
+  colorscheme retrobox
+catch
+  colorscheme slate
+endtry
 set background=dark
 let g:lightline = {
       \ 'colorscheme': 'nord',
@@ -135,11 +139,15 @@ vnoremap <leader>p "_dP
 " plugin keys
 function! SwapTheme()
   if g:colors_name == 'quiet'
-    colorscheme retrobox
-	set background=dark
+    try
+      colorscheme retrobox
+    catch
+      colorscheme slate
+    endtry
+    set background=dark
   else
     colorscheme quiet
-	set background=light
+    set background=light
   endif
 endfunction
 
