@@ -91,11 +91,11 @@ set clipboard=unnamedplus
 set completeopt=menuone,noselect
 
 " editor layout
-colorscheme monochrome
+colorscheme retrobox
+set background=dark
 let g:lightline = {
       \ 'colorscheme': 'nord',
       \ }
-" set background=dark
 " set termguicolors
 " set signcolumn=yes
 " set foldcolumn=1 " Add a bit extra margin to the left
@@ -133,7 +133,18 @@ nmap N Nzzzv
 " paster without buffer replace
 vnoremap <leader>p "_dP
 " plugin keys
+function! SwapTheme()
+  if g:colors_name == 'quiet'
+    colorscheme retrobox
+	set background=dark
+  else
+    colorscheme quiet
+	set background=light
+  endif
+endfunction
+
 nmap <leader><Home> <Cmd>Goyo<cr>
+nmap <leader><End> <Cmd>call SwapTheme()<cr>
 nnoremap <leader>F <Cmd>UndotreeToggle<cr>
 
 " === Goyo
@@ -155,3 +166,6 @@ let g:undotree_CustomUndotreeCmd='vertical 32 new'
 let g:undotree_CustomDiffpanelCmd='belowright 12 new'
 " let g:undotree_WindowLayout=3
 " let g:undotree_ShortIndicators=1
+
+autocmd vimenter * Goyo 
+autocmd vimenter * UndotreeToggle 
