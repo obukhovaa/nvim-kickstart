@@ -18,6 +18,7 @@ Plug 'itchyny/lightline.vim'
 Plug 'mbbill/undotree'
 Plug 'junegunn/goyo.vim'
 Plug 'wellle/context.vim'
+Plug 'junegunn/fzf.vim'
 call plug#end()
 
 let mapleader = " "
