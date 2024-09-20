@@ -17,7 +17,7 @@ Plug 'fxn/vim-monochrome'
 Plug 'itchyny/lightline.vim'
 Plug 'mbbill/undotree'
 Plug 'junegunn/goyo.vim'
-Plug 'junegunn/limelight.vim'
+Plug 'wellle/context.vim'
 call plug#end()
 
 let mapleader = " "
@@ -31,9 +31,6 @@ set visualbell
 set noerrorbells
 set t_vb=
 set tm=500
-
-"set foldcolumn=1 " Add a bit extra margin to the left
-"set showmode " Always show what mode we're currently editing in
 
 " Linebreak on 500 characters
 set lbr
@@ -78,6 +75,9 @@ set magic
 set showmatch " Set show matching parenthesis
 set breakindent
 set mouse=a " Enable mouse mode
+" change cursor to line when inser
+let &t_SI = "\e[6 q"
+let &t_EI = "\e[2 q"
 
 " Configure backspace so it acts as it should act
 set backspace=eol,start,indent
@@ -95,14 +95,18 @@ let g:lightline = {
       \ 'colorscheme': 'nord',
       \ }
 " set background=dark
-set termguicolors
+" set termguicolors
 " set signcolumn=yes
+" set foldcolumn=1 " Add a bit extra margin to the left
+" set showmode " Always show what mode we're currently editing in
+
 set termencoding=utf-8
 set encoding=utf-8
 set lazyredraw                  " don't update the display while executing macros
 set laststatus=2                " tell VIM to always put a status line in, even
                                 "    if there is only one window
 set cmdheight=1                 " use a status bar that is 1 rows high
+set noshowmode " accommodated by lightline
 
 " white space characters
 set nolist
@@ -127,7 +131,26 @@ nmap n nzzzv
 nmap N Nzzzv
 " paster without buffer replace
 vnoremap <leader>p "_dP
-" plugins
+" plugin keys
 nmap <leader><Home> <Cmd>Goyo<cr>
-nmap <leader><End> <Cmd>Limelight!! 0.25<cr>
 nnoremap <leader>F <Cmd>UndotreeToggle<cr>
+
+" === Goyo
+" changing from the default 80 to accomodate for UndoTree panel
+let g:goyo_width = 104
+function! s:goyo_enter()
+  set number relativenumber
+endfunction
+
+function! s:goyo_leave()
+endfunction
+
+autocmd! User GoyoEnter nested call <SID>goyo_enter()
+autocmd! User GoyoLeave nested call <SID>goyo_leave()
+
+" === UndoTree
+" using relative positioning instead
+let g:undotree_CustomUndotreeCmd='vertical 32 new'
+let g:undotree_CustomDiffpanelCmd='belowright 12 new'
+" let g:undotree_WindowLayout=3
+" let g:undotree_ShortIndicators=1
