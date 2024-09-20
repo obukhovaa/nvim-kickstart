@@ -172,8 +172,4 @@ autocmd! User GoyoLeave nested call <SID>goyo_leave()
 " using relative positioning instead
 let g:undotree_CustomUndotreeCmd='vertical 32 new'
 let g:undotree_CustomDiffpanelCmd='belowright 12 new'
-" let g:undotree_WindowLayout=3
-" let g:undotree_ShortIndicators=1
 
-autocmd vimenter * Goyo 
-autocmd vimenter * UndotreeToggle 
