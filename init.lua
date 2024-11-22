@@ -69,6 +69,26 @@ local function is_complete_setup(_)
     return vim.g.use_complete_setup
 end
 
+-- HACK: handle issues with treesitter syntax highlight
+vim.filetype.add {
+    extension = {
+        gotmpl = 'gotmpl',
+    },
+    pattern = {
+        ['.*/templates/.*%.tpl'] = 'helm',
+        ['.*/templates/.*%.ya?ml'] = 'helm',
+        ['helmfile.*%.ya?ml'] = 'helm',
+    },
+}
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = { 'mustache' },
+    callback = function()
+        if vim.fn.expand '%:e' == 'tpl' then
+            vim.bo.filetype = 'helm'
+        end
+    end,
+})
+
 require('lazy').setup({
     -- git related plugins
     'tpope/vim-fugitive',
@@ -173,6 +193,8 @@ require('lazy').setup({
                     'gofumpt',
                     'goimports',
                     'shfmt',
+                    'tflint',
+                    -- 'golangci-lint',
                 }
                 servers = {
                     -- rust_analyzer = {},
@@ -180,7 +202,7 @@ require('lazy').setup({
                     docker_compose_language_service = {},
                     dockerls = {},
                     eslint = {},
-                    golangci_lint_ls = {},
+                    -- golangci_lint_ls = {},
                     gopls = {
                         settings = {
                             gopls = {
@@ -499,6 +521,7 @@ require('lazy').setup({
         },
         opts = {
             filesystem = {
+                hijack_netrw_behavior = 'disabled',
                 follow_current_file = {
                     enabled = true,
                     leave_dirs_open = true,
@@ -559,6 +582,12 @@ require('lazy').setup({
             {
                 'nvim-treesitter/nvim-treesitter-context',
                 build = ':TSContextEnable',
+                opts = {},
+                init = function()
+                    vim.keymap.set('n', '<leader>k', function()
+                        require('treesitter-context').go_to_context(vim.v.count1)
+                    end, { silent = true, desc = 'Jump to context root' })
+                end,
             },
             'nvim-treesitter/nvim-treesitter-refactor',
         },
@@ -570,6 +599,7 @@ require('lazy').setup({
                 'c',
                 'cpp',
                 'go',
+                'gotmpl',
                 'lua',
                 'python',
                 'rust',
@@ -582,16 +612,28 @@ require('lazy').setup({
                 'kotlin',
                 'java',
                 'yaml',
+                'helm',
                 'bash',
                 'markdown',
                 'query',
                 'comment',
+                'terraform',
             },
 
             -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
             auto_install = true,
 
-            highlight = { enable = true },
+            highlight = {
+                enable = true,
+                -- disable = function(lang, buf)
+                --     print 'DISABLING'
+                --     local max_filesize = 100 * 1024 -- 100 KB
+                --     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                --     if ok and stats and stats.size > max_filesize then
+                --         return true
+                --     end
+                -- end,
+            },
             -- NOTE: it breaks go lang indent, try to enable it some time later
             indent = { enable = true, disable = { 'go', 'lua' } },
             incremental_selection = {
@@ -649,6 +691,14 @@ require('lazy').setup({
             },
             refactor = {
                 highlight_definitions = {
+                    -- Lags on big files
+                    disable = function(lang, buf)
+                        local max_filesize = 100 * 1024 -- 100 KB
+                        local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                        if ok and stats and stats.size > max_filesize then
+                            return true
+                        end
+                    end,
                     enable = true,
                     -- Set to false if you have an `updatetime` of ~100.
                     clear_on_cursor_move = true,

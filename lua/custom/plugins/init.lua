@@ -3,41 +3,159 @@ local function is_complete_setup(_)
 end
 
 return {
-    -- Ollama GPT
+    -- Ollama/OpenAI GPT
     {
         'David-Kunz/gen.nvim',
         cond = is_complete_setup(),
-        opts = {
-            model = 'deepseek-coder-v2:latest', -- The default model to use.
-            host = 'localhost', -- The host running the Ollama service.
-            port = '11434', -- The port on which the Ollama service is listening.
-            quit_map = 'q', -- set keymap for close the response window
-            retry_map = '<c-r>', -- set keymap to re-send the current prompt
-            init = function(_)
-                pcall(io.popen, 'ollama serve > /dev/null 2>&1 &')
-            end,
-            -- Function to initialize Ollama
-            command = function(options)
-                local body = { model = options.model, stream = true }
-                return 'curl --silent --no-buffer -X POST http://' .. options.host .. ':' .. options.port .. '/api/chat -d $body'
-            end,
-            -- The command for the Ollama service. You can use placeholders $prompt, $model and $body (shellescaped).
-            -- This can also be a command string.
-            -- The executed command must return a JSON object with { response, context }
-            -- (context property is optional).
-            -- list_models = '<omitted lua function>', -- Retrieves a list of model names
-            display_mode = 'float', -- The display mode. Can be "float" or "split" or "horizontal-split".
-            show_prompt = false, -- Shows the prompt submitted to Ollama.
-            show_model = true, -- Displays which model you are using at the beginning of your chat session.
-            no_auto_close = false, -- Never closes the window automatically.
-            debug = false, -- Prints errors and the command which is run.
-        },
+        config = function()
+            -- default to local setup
+            vim.g.gen_remote_toggle_on = false
+            -- default to openai when remtoe mode activated, could be changed to `ollama`
+            vim.g.gen_remote_type = 'openai'
+            -- adjust to set your API key
+            local get_api_token = function()
+                local api_key = os.getenv 'OPEN_AI_PIANO_TOKEN' or ''
+                if api_key == '' then
+                    print "Can't find OPEN AI token, set OPEN_AI_PIANO_TOKEN env variable"
+                end
+                return api_key
+            end
+            local gen_local_opts = {
+                model = 'deepseek-coder-v2:latest', -- The default model to use, will be used for both local and remote Ollama service
+                host = 'localhost', -- The host running the Ollama service.
+                port = '11434', -- The port on which the Ollama service is listening.
+                quit_map = 'q', -- Set keymap for close the response window
+                retry_map = '<c-r>', -- Set keymap to re-send the current prompt
+                init = function(_)
+                    pcall(io.popen, 'ollama serve > /dev/null 2>&1 &')
+                end,
+                command = function(options)
+                    local req = 'curl --silent --no-buffer -X POST http://' .. options.host .. ':' .. options.port .. '/api/chat -d $body'
+                    return req
+                end,
+                display_mode = 'split', -- The display mode. Can be "float" or "split" or "horizontal-split".
+                show_prompt = true, -- Shows the prompt submitted to Ollama.
+                show_model = true, -- Displays which model you are using at the beginning of your chat session.
+                no_auto_close = false, -- Never closes the window automatically.
+                debug = false, -- Prints errors and the command which is run.
+                openai_path_prefix = '', -- If remote supports multiple backends, can be managed via paths.
+                ollama_path_prefix = '',
+            }
+            local gen_remote_override_opts = {
+                model = 'gpt-4o-mini',
+                host = 'llm.de-prod.cxense.com',
+                port = '443',
+                openai_path_prefix = '/openai',
+                ollama_path_prefix = '/ollama',
+                command = function(options)
+                    local path
+                    if vim.g.gen_remote_type == 'openai' then
+                        path = options.openai_path_prefix .. '/chat/completions'
+                    else
+                        path = options.ollama_path_prefix .. '/api/chat'
+                    end
+                    local req = 'curl --silent --no-buffer -X POST https://'
+                        .. options.host
+                        .. ':'
+                        .. options.port
+                        .. path
+                        .. ' -d $body'
+                        .. " -H 'Content-Type: application/json'"
+                        .. " -H 'Authorization: Bearer "
+                        .. get_api_token()
+                        .. "'"
+                    return req
+                end,
+            }
+            local prepare_opts = function()
+                local new_opts = {}
+                for k, v in pairs(gen_local_opts) do
+                    if vim.g.gen_remote_toggle_on and gen_remote_override_opts[k] ~= nil then
+                        -- assuming that remote and local ollama has the same model
+                        if vim.g.gen_remote_type == 'ollama' and k == 'model' then
+                            new_opts[k] = gen_local_opts.model
+                        else
+                            new_opts[k] = gen_remote_override_opts[k]
+                        end
+                    else
+                        new_opts[k] = v
+                    end
+                end
+                new_opts.list_models = function(options)
+                    local models_path = '/api/tags'
+                    local auth = ''
+                    if vim.g.gen_remote_toggle_on then
+                        auth = " -H 'Authorization: Bearer " .. get_api_token() .. "'"
+                        if vim.g.gen_remote_type == 'openai' then
+                            models_path = options.openai_path_prefix .. '/models'
+                        else
+                            models_path = options.ollama_path_prefix .. '/api/tags'
+                        end
+                    end
+                    local schema
+                    if options.port == '443' then
+                        schema = 'https://'
+                    else
+                        schema = 'http://'
+                    end
+                    local curl = 'curl --silent --no-buffer ' .. schema .. options.host .. ':' .. options.port .. models_path .. auth
+                    local response = vim.fn.systemlist(curl)
+                    local list = vim.fn.json_decode(response)
+                    local models = {}
+                    if vim.g.gen_remote_toggle_on and vim.g.gen_remote_type == 'openai' then
+                        for key, _ in pairs(list.data) do
+                            table.insert(models, list.data[key].name)
+                        end
+                        table.sort(models)
+                        -- keep 10 most recent models
+                        local size = #models
+                        while size > 10 do
+                            size = size - 1
+                        end
+                    else
+                        for key, _ in pairs(list.models) do
+                            table.insert(models, list.models[key].name)
+                        end
+                        table.sort(models)
+                    end
+                    return models
+                end
+                return new_opts
+            end
+
+            -- :GenRemoteToggle to select between local and remote server modes
+            vim.api.nvim_create_user_command('GenRemoteToggle', function()
+                vim.g.gen_remote_toggle_on = not vim.g.gen_remote_toggle_on
+                if vim.g.gen_remote_toggle_on then
+                    print(string.format('Using remote gpt from %s', vim.g.gen_remote_type))
+                else
+                    print 'Using local ollama GPT API'
+                end
+                require('gen').setup(prepare_opts())
+            end, {})
+
+            -- :GenRemoteTypeSwap to select between openai and ollama remote models
+            vim.api.nvim_create_user_command('GenRemoteTypeSwap', function()
+                if vim.g.gen_remote_type == 'openai' or vim.g.gen_remote_type == nil then
+                    print 'Using OLLAMA remote api'
+                    vim.g.gen_remote_type = 'ollama'
+                else
+                    print 'Using OPEN AI remote api'
+                    vim.g.gen_remote_type = 'openai'
+                end
+                require('gen').setup(prepare_opts())
+            end, {})
+
+            require('gen').setup(prepare_opts())
+        end,
         init = function()
-            -- Ollama gen.nvim
+            -- Remap to run GPT prompt
             vim.keymap.set({ 'n', 'v' }, '<leader>`', ':Gen<CR>')
+            -- Remap to choose GPR model
             vim.keymap.set({ 'n' }, '<leader>~', require('gen').select_model, { desc = 'Select LLM to use' })
         end,
     },
+
     {
         'obukhovaa/gotests-vim', -- generates go test templates
         cond = is_complete_setup(),
@@ -60,8 +178,8 @@ return {
                 -- * an absolute number of cells when > 1
                 -- * a percentage of the width / height of the editor when <= 1
                 -- * a function that returns the width or the height
-                width = 120, -- width of the Zen window
-                height = 1, -- height of the Zen window
+                width = 125, -- width of the Zen window
+                height = 0.90, -- height of the Zen window
                 -- by default, no options are changed for the Zen window
                 -- uncomment any of the options below, or add other vim.wo options you want to apply
                 options = {
@@ -79,12 +197,17 @@ return {
                     enabled = true,
                     ruler = false, -- disables the ruler text in the cmd line area
                     showcmd = false, -- disables the command in the last line of the screen
-                    laststatus = 0, -- turn off the statusline in zen mode
+                    laststatus = 0, -- turn off the statusline in zen mode, 3 - to enable
                 },
-                gitsigns = { enabled = true },
+                gitsigns = { enabled = false },
                 twilight = { enabled = true },
                 tmux = { enabled = false },
                 todo = { enabled = false },
+                undotree = {
+                    enabled = true,
+                    position = 'right',
+                    width_relative = 0.2,
+                },
             },
             -- callback where you can add custom code when the Zen window opens
             on_open = function(win)
@@ -188,6 +311,8 @@ return {
             vim.g.undotree_WindowLayout = 3
             vim.g.undotree_ShortIndicators = 1
             vim.g.undotree_SplitWidth = 40
+            vim.g.undotree_HelpLine = 0
+            vim.g.undotree_CursorLine = 1
         end,
     },
 
@@ -220,6 +345,52 @@ return {
                 'if_statement',
             },
             exclude = {}, -- exclude these filetypes
+        },
+    },
+
+    {
+        'shellRaining/hlchunk.nvim',
+        event = { 'BufReadPre', 'BufNewFile' },
+        config = function()
+            require('hlchunk').setup {
+                chunk = {
+                    enable = true,
+                    use_treesitter = false,
+                    -- animation related
+                    style = {
+                        { fg = '#c678dd' },
+                        { fg = '#e06c75' },
+                    },
+                    delay = 0,
+                },
+                indent = {
+                    -- instead of 'lukas-reineke/indent-blankline.nvim',
+                    -- but I like latter more
+                    enable = false,
+                },
+                line_num = {
+                    enable = false,
+                    style = '#c678dd',
+                },
+            }
+        end,
+    },
+    {
+        -- add indentation guides even on blank lines
+        'lukas-reineke/indent-blankline.nvim',
+        main = 'ibl',
+        opts = {
+            enabled = true,
+            scope = {
+                enabled = false,
+            },
+            whitespace = {
+                highlight = 'iblwhitespace',
+                remove_blankline_trail = true,
+            },
+            indent = {
+                char = { '│' },
+            },
         },
     },
 
@@ -267,5 +438,37 @@ return {
                 section_separators = '',
             },
         },
+    },
+    {
+        'ruifm/gitlinker.nvim',
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        init = function()
+            vim.api.nvim_set_keymap('n', '<leader>gY', '<cmd>lua require"gitlinker".get_repo_url()<cr>', { silent = true, desc = '[g]it repo url [Y]ank' })
+            vim.api.nvim_set_keymap(
+                'n',
+                '<leader>gB',
+                '<cmd>lua require"gitlinker".get_repo_url({action_callback = require"gitlinker.actions".open_in_browser})<cr>',
+                { silent = true, desc = '[g]o to git repo in [B]rowser' }
+            )
+            vim.api.nvim_set_keymap(
+                'n',
+                '<leader>gbb',
+                '<cmd>lua require"gitlinker".get_buf_range_url("n", {action_callback = require"gitlinker.actions".open_in_browser})<cr>',
+                { silent = true, desc = '[g]o to git line in [2b]rowser' }
+            )
+            vim.api.nvim_set_keymap('n', '<leader>gy', '<cmd>lua require"gitlinker".get_buf_range_url()<cr>', { silent = true, desc = '[g]it line url [Y]ank' })
+            vim.api.nvim_set_keymap(
+                'v',
+                '<leader>gy',
+                '<cmd>lua require"gitlinker".get_buf_range_url("v")<cr>',
+                { silent = true, desc = '[g]it lines url [Y]ank' }
+            )
+            vim.api.nvim_set_keymap(
+                'v',
+                '<leader>gb',
+                '<cmd>lua require"gitlinker".get_buf_range_url("v", {action_callback = require"gitlinker.actions".open_in_browser})<cr>',
+                { desc = '[g]o to git lines in [b]rowser' }
+            )
+        end,
     },
 }
