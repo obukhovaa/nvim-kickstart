@@ -110,6 +110,7 @@ return {
                         -- keep 10 most recent models
                         local size = #models
                         while size > 10 do
+                            table.remove(models, 1)
                             size = size - 1
                         end
                     else
@@ -137,12 +138,11 @@ return {
             -- :GenRemoteTypeSwap to select between openai and ollama remote models
             vim.api.nvim_create_user_command('GenRemoteTypeSwap', function()
                 if vim.g.gen_remote_type == 'openai' or vim.g.gen_remote_type == nil then
-                    print 'Using OLLAMA remote api'
                     vim.g.gen_remote_type = 'ollama'
                 else
-                    print 'Using OPEN AI remote api'
                     vim.g.gen_remote_type = 'openai'
                 end
+                print(string.format('Using %s remote api', vim.g.gen_remote_type))
                 require('gen').setup(prepare_opts())
             end, {})
 
