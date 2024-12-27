@@ -184,6 +184,7 @@ require('lazy').setup({
             local servers = nil
             local lsp_dependencies = nil
             if vim.g.use_complete_setup == true then
+                -- https://mason-registry.dev/registry/list
                 lsp_dependencies = {
                     'stylua',
                     'ktlint',

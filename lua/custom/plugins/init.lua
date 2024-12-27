@@ -9,7 +9,7 @@ return {
         cond = is_complete_setup(),
         config = function()
             -- default to local setup
-            vim.g.gen_remote_toggle_on = false
+            vim.g.gen_remote_toggle_on = true
             -- default to openai when remtoe mode activated, could be changed to `ollama`
             vim.g.gen_remote_type = 'openai'
             -- adjust to set your API key
@@ -102,6 +102,10 @@ return {
                     local response = vim.fn.systemlist(curl)
                     local list = vim.fn.json_decode(response)
                     local models = {}
+                    if list ~= nil and list.detail ~= nil and string.find(list.detail, '401 Unauthorized') then
+                        vim.api.nvim_echo({ { 'GenNVIM: ', 'ErrorMsg' }, { 'Unauthorized: OPEN_AI_PIANO_TOKEN is invalid' } }, true, {})
+                        return models
+                    end
                     if vim.g.gen_remote_toggle_on and vim.g.gen_remote_type == 'openai' then
                         for key, _ in pairs(list.data) do
                             table.insert(models, list.data[key].name)
@@ -205,7 +209,7 @@ return {
                 todo = { enabled = false },
                 undotree = {
                     enabled = true,
-                    position = 'right',
+                    position = 'left',
                     width_relative = 0.2,
                 },
             },
@@ -469,6 +473,17 @@ return {
                 '<cmd>lua require"gitlinker".get_buf_range_url("v", {action_callback = require"gitlinker.actions".open_in_browser})<cr>',
                 { desc = '[g]o to git lines in [b]rowser' }
             )
+        end,
+    },
+
+    {
+        'wfxr/minimap.vim',
+        init = function()
+            vim.g.minimap_width = 10
+            vim.g.minimap_auto_start = 1
+            vim.g.minimap_auto_start_win_enter = 1
+            vim.g.minimap_highlight_search = 1
+            vim.g.minimap_git_colors = 1
         end,
     },
 }

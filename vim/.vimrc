@@ -19,6 +19,8 @@ Plug 'mbbill/undotree'
 Plug 'junegunn/goyo.vim'
 Plug 'wellle/context.vim'
 Plug 'junegunn/fzf.vim'
+"" requires https://github.com/wfxr/code-minimap
+"" Plug 'wfxr/minimap.vim'
 call plug#end()
 
 let mapleader = " "

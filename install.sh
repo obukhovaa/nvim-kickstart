@@ -52,6 +52,11 @@ if [ "$use_complete_nvim_setup" = true ] && [ "$is_minimal" != true ]; then
     fi
 fi
 
+if ! command -v code-minimap; then
+    echo "code-minimap could not be found, installing"
+    $pkg_manager $add_cmd code-minimap
+fi
+
 if ! command -v dig; then
     echo "dig could not be found, installing"
     $pkg_manager $add_cmd $net_pkg
