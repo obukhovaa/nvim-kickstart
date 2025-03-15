@@ -3,6 +3,17 @@ local function is_complete_setup(_)
 end
 
 return {
+    -- AI code agent: https://aider.chat
+    {
+        'joshuavial/aider.nvim',
+        opts = {
+            -- your configuration comes here
+            -- if you don't want to use the default settings
+            auto_manage_context = true, -- automatically manage buffer context
+            default_bindings = true, -- use default <leader>A keybindings
+            debug = false, -- enable debug logging
+        },
+    },
     -- Ollama/OpenAI GPT
     {
         'David-Kunz/gen.nvim',
@@ -40,12 +51,13 @@ return {
                 debug = false, -- Prints errors and the command which is run.
                 openai_path_prefix = '', -- If remote supports multiple backends, can be managed via paths.
                 ollama_path_prefix = '',
+                result_filetype = 'markdown', -- Configure filetype of the result buffer
             }
             local gen_remote_override_opts = {
-                model = 'gpt-4o-mini',
+                model = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0', -- 'gpt-4o-mini',
                 host = 'llm.de-prod.cxense.com',
                 port = '443',
-                openai_path_prefix = '/openai',
+                openai_path_prefix = '/api', -- BUG: changed from openai, new webui returns all models at once
                 ollama_path_prefix = '/ollama',
                 command = function(options)
                     local path
@@ -101,6 +113,7 @@ return {
                     local curl = 'curl --silent --no-buffer ' .. schema .. options.host .. ':' .. options.port .. models_path .. auth
                     local response = vim.fn.systemlist(curl)
                     local list = vim.fn.json_decode(response)
+                    vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(list) } }, true, {})
                     local models = {}
                     if list ~= nil and list.detail ~= nil and string.find(list.detail, '401 Unauthorized') then
                         vim.api.nvim_echo({ { 'GenNVIM: ', 'ErrorMsg' }, { 'Unauthorized: OPEN_AI_PIANO_TOKEN is invalid' } }, true, {})
@@ -232,9 +245,7 @@ return {
         cond = is_complete_setup(),
         cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
         ft = { 'markdown' },
-        build = function()
-            vim.fn['mkdp#util#install']()
-        end,
+        build = ':call mkdp#util#install()',
     },
     -- replace cmdline
     {
@@ -257,7 +268,10 @@ return {
             --             stages = 'static',
             --             render = 'compact',
             --             background_colour = 'FloatShadow',
-            --             timeout = 3000,
+            --             -- timeout = 3000,
+            --             merge_duplicates = true,
+            --             fps = 60,
+            --             top_down = false,
             --         }
             --         vim.notify = require 'notify'
             --     end,
@@ -475,13 +489,12 @@ return {
             )
         end,
     },
-
     {
         'wfxr/minimap.vim',
         init = function()
             vim.g.minimap_width = 10
-            vim.g.minimap_auto_start = 1
-            vim.g.minimap_auto_start_win_enter = 1
+            vim.g.minimap_auto_start = 0
+            vim.g.minimap_auto_start_win_enter = 0
             vim.g.minimap_highlight_search = 1
             vim.g.minimap_git_colors = 1
         end,
