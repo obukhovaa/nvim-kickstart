@@ -5,6 +5,10 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
+-- hande 39_Highlight_Matching_Pair slowness on long lines
+vim.g.matchparen_timeout = 20
+vim.g.matchparen_insert_timeout = 20
+
 local set = vim.opt
 set.tabstop = 4
 set.softtabstop = 4
@@ -749,6 +753,8 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous dia
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', '<Cmd>TroubleToggle document_diagnostics<CR>', { desc = 'Open diagnostics list' })
+-- Buffers
+vim.keymap.set('n', '<leader>bda', '<Cmd>%bd|e#<CR>', { desc = 'Close all buffers, but this' })
 
 -- [[ Highlight onyank ]]
 -- See `:help vim.highlight.on_yank()`

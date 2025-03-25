@@ -6,9 +6,6 @@ export ZSH="$HOME/.oh-my-zsh"
 
 # Set default edtor to nvim
 export ZVM_VI_EDITOR="nvim"
-export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always {}' --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-export KUBE_EDITOR="nvim"
-export EDITOR="nvim"
 
 export ZVM_VI_HIGHLIGHT_FOREGROUND="white"
 export ZVM_VI_HIGHLIGHT_BACKGROUND="blue"
@@ -126,6 +123,10 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+alias tmux_guide="open /Users/nouwa/Development/guide/tmux.html"
+alias vim_guide="chrome https://devhints.io/vim"
+
 function kdig {
 	local is_minimal=true
 	if [ ! -z "$3" ]; then
@@ -153,6 +154,19 @@ function kexec {
 	kubectl -n "$1" exec -ti $pod_name -- sh
 }
 
+function kscale {
+	local scale_to="${3:-0}"
+	local target_deployment="$(kubectl -n $1 get deployment | grep "$2")"
+	names=()
+	echo "$target_deployment" | awk 'NR > 1 {print $1}' | while read -r name; do
+		names+=("$name")
+	done
+	for name in "${names[@]}"; do
+		echo "scaling $name to $scale_to"
+		kubectl -n "$1" scale deployment "$name" --replicas "$scale_to"
+	done
+}
+
 function kpods { 
 	while true; do
 		local pods="$(kubectl -n $1 get pods | grep "$2")"
@@ -170,13 +184,32 @@ function ksvc {
 }
 
 function klog {
-	if [ -z "$2" ]
+	if [ -z "$2" ] 
 	then
 		echo "deployment is not provided"
 		return 1
 	fi
-	
 	kubectl -n "$1" logs -f "$(kubectl -n $1 get pods | grep $2 | awk '{print $1; exit;}')"
+}
+
+function kclean {
+	if [ -z "$1" ] 
+	then
+		echo "namespace is not provided"
+		return 1
+	fi
+
+	kubectl delete pods --field-selector status.phase=Failed -n "$1"
+}
+
+function kevents {
+	if [ -z "$1" ]
+	then
+		echo "namespace is not provided"
+		return 1
+	fi
+
+	kubectl -n "$1" get events --sort-by='.lastTimestamp' | grep -E "^\d{0,3}s|^[1-5]{0,1}m"
 }
 
 function encrypt_pwd() {
@@ -188,6 +221,19 @@ function decrypt_pwd() {
 	openssl enc -in "$in" -aes-256-cbc -d -pass stdin -out ${in%$'.sec'}
 }
 
+function piano_vpn {
+	cd ~/Development/clients/vpn && sslocal -c ss.json &
+	osascript -e 'tell application "Tunnelblick"' -e "connect \"piano\"" -e "end tell"
+}
+
+function sniff_http {
+	local port="$1"
+	local search="$2"
+	stdbuf -oL -eL sudo tcpdump -A -s 10240 "tcp port $port and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)" \
+		| egrep -a ".+(GET |HTTP\/|POST )|^[A-Za-z0-9-]+: " \
+		| perl -nle 'BEGIN{$|=1} { s/.*?(GET |HTTP\/[0-9.]* |POST )/\n$1/g; print }' \
+		| grep -A 35 -B 5 "$search"
+}
 
 bindkey "\e\eOD" backward-word 
 bindkey "\e\eOC" forward-word
