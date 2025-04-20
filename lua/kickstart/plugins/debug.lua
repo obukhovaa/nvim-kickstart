@@ -94,6 +94,12 @@ return {
 
         -- Install golang specific config
         require('dap-go').setup()
+        vim.keymap.set('n', '<leader>td', function()
+            require('dap-go').debug_test()
+        end, { desc = 'Debug closest test' })
+        vim.keymap.set('n', '<leader>tl', function()
+            require('dap-go').debug_last_test()
+        end, { desc = 'Debug last test' })
 
         -- Install js specific config
         require('dap-vscode-js').setup {

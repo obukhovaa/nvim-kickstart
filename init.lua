@@ -226,6 +226,7 @@ require('lazy').setup({
                                     parameterNames = true,
                                     rangeVariableTypes = true,
                                 },
+                                buildFlags = { '-tags=integration wireinject !wireinject' },
                             },
                         },
                     },
