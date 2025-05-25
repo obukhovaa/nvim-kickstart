@@ -2,6 +2,19 @@ local function is_complete_setup(_)
     return vim.g.use_complete_setup
 end
 
+-- Function to check if a model name contains any whitelisted pattern
+local function is_white_listed(model_list, model_name)
+    if next(model_list) == nil then
+        return true
+    end
+    for _, pattern in ipairs(model_list) do
+        if model_name:match(pattern) then
+            return true
+        end
+    end
+    return false
+end
+
 return {
     -- AI code agent: https://aider.chat
     {
@@ -42,17 +55,17 @@ return {
                     local req = 'curl --silent --no-buffer -X POST http://' .. options.host .. ':' .. options.port .. '/api/chat -d $body'
                     return req
                 end,
-                display_mode = 'split', -- The display mode. Can be "float" or "split" or "horizontal-split".
+                display_mode = 'vertical-split', -- The display mode. Can be "float" or "vertical-split" or "horizontal-split".
                 show_prompt = true, -- Shows the prompt submitted to Ollama.
                 show_model = true, -- Displays which model you are using at the beginning of your chat session.
-                no_auto_close = false, -- Never closes the window automatically.
+                no_auto_close = true, -- Never closes the window automatically.
                 debug = false, -- Prints errors and the command which is run.
                 openai_path_prefix = '', -- If remote supports multiple backends, can be managed via paths.
                 ollama_path_prefix = '',
                 result_filetype = 'markdown', -- Configure filetype of the result buffer
             }
             local gen_remote_override_opts = {
-                model = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0', -- 'gpt-4o-mini',
+                model = 'us.anthropic.claude-opus-4-20250514-v1:0',
                 host = 'llm.de-prod.cxense.com',
                 port = '443',
                 openai_path_prefix = '/api', -- BUG: changed from openai, new webui returns all models at once
@@ -92,6 +105,12 @@ return {
                     end
                 end
                 new_opts.list_models = function(options)
+                    local model_white_list = {
+                        'o4',
+                        'gpt',
+                        'anthropic',
+                        'deepseek',
+                    }
                     local models_path = '/api/tags'
                     local auth = ''
                     if vim.g.gen_remote_toggle_on then
@@ -111,20 +130,26 @@ return {
                     local curl = 'curl --silent --no-buffer ' .. schema .. options.host .. ':' .. options.port .. models_path .. auth
                     local response = vim.fn.systemlist(curl)
                     local list = vim.fn.json_decode(response)
-                    vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(list) } }, true, {})
+                    if gen_local_opts.debug then
+                        vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(list) } }, true, {})
+                    end
                     local models = {}
                     if list ~= nil and list.detail ~= nil and string.find(list.detail, '401 Unauthorized') then
                         vim.api.nvim_echo({ { 'GenNVIM: ', 'ErrorMsg' }, { 'Unauthorized: OPEN_AI_PIANO_TOKEN is invalid' } }, true, {})
                         return models
                     end
                     if vim.g.gen_remote_toggle_on and vim.g.gen_remote_type == 'openai' then
+                        -- Filter models based on the whitelist
                         for key, _ in pairs(list.data) do
-                            table.insert(models, list.data[key].name)
+                            local modelName = list.data[key].name
+                            if is_white_listed(model_white_list, modelName) then
+                                table.insert(models, modelName)
+                            end
                         end
                         table.sort(models)
-                        -- keep 10 most recent models
+                        -- keep 12 most recent models
                         local size = #models
-                        while size > 10 do
+                        while size > 12 do
                             table.remove(models, 1)
                             size = size - 1
                         end

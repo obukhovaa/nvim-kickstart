@@ -122,12 +122,14 @@ require('lazy').setup({
         cond = is_complete_setup,
         dependencies = {
             -- automatically install lsps to stdpath for neovim
-            { 'williamboman/mason.nvim', config = true },
-            'williamboman/mason-lspconfig.nvim',
+            { 'mason-org/mason.nvim', config = true },
+            'mason-org/mason-lspconfig.nvim',
             'WhoIsSethDaniel/mason-tool-installer.nvim',
             -- useful status updates for lsp
             -- note: `opts = {}` is the same as calling `require('fidget').setup({})`
             { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
+            -- note: required for sqls
+            { 'nanotee/sqls.nvim' },
 
             -- Allows extra capabilities provided by nvim-cmp
             'hrsh7th/cmp-nvim-lsp',
@@ -181,10 +183,6 @@ require('lazy').setup({
                 end
             end
 
-            -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
-            local capabilities = vim.lsp.protocol.make_client_capabilities()
-            capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
             local servers = nil
             local lsp_dependencies = nil
             if vim.g.use_complete_setup == true then
@@ -197,9 +195,11 @@ require('lazy').setup({
                     'black',
                     'gofumpt',
                     'goimports',
+                    'gotests',
                     'shfmt',
                     'tflint',
-                    -- 'golangci-lint',
+                    'tree-sitter-cli',
+                    'sqruff',
                 }
                 servers = {
                     -- rust_analyzer = {},
@@ -207,6 +207,7 @@ require('lazy').setup({
                     docker_compose_language_service = {},
                     dockerls = {},
                     eslint = {},
+                    zls = {},
                     -- golangci_lint_ls = {},
                     gopls = {
                         settings = {
@@ -238,7 +239,18 @@ require('lazy').setup({
                     -- NOTE: non-responsive, jvm development without idea is a dogwater
                     -- kotlin_language_server = {},
                     ts_ls = {},
-                    sqlls = {},
+                    sqls = {
+                        settings = {
+                            sqls = {
+                                connections = {
+                                    {
+                                        driver = 'mysql',
+                                        dataSourceName = 'root:root@tcp(127.0.0.1:3306)/tinypass',
+                                    },
+                                },
+                            },
+                        },
+                    },
                     marksman = {},
                     lua_ls = {
                         -- cmd = {...},
@@ -256,12 +268,10 @@ require('lazy').setup({
             else
                 lsp_dependencies = {
                     'stylua',
-                    -- 'prettierd',
-                    -- 'isort',
-                    -- 'black',
                     'gofumpt',
                     'goimports',
                     'shfmt',
+                    'sqruff',
                 }
                 servers = {
                     gopls = {
@@ -297,27 +307,24 @@ require('lazy').setup({
                 }
             end
 
-            -- Ensure the servers above are installed
+            -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+
+            for server_name, server_config in pairs(servers) do
+                local extended_capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {})
+                local config = vim.tbl_deep_extend('force', { on_attach = on_attach, capabilities = extended_capabilities }, server_config or {})
+                vim.lsp.config(server_name, config)
+            end
+
             require('mason').setup()
-            -- You can add other tools here that you want Mason to install
-            -- for you, so that they are available from within Neovim.
-            local ensure_installed = vim.tbl_keys(servers or {})
-
-            vim.list_extend(ensure_installed, lsp_dependencies)
-            require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
+            local ensure_installed_lsp = vim.tbl_keys(servers or {})
+            local ensure_installed_all = vim.tbl_keys(servers or {})
+            vim.list_extend(ensure_installed_all, lsp_dependencies)
+            require('mason-tool-installer').setup { ensure_installed = ensure_installed_all }
             require('mason-lspconfig').setup {
-                handlers = {
-                    function(server_name)
-                        local server = servers[server_name] or {}
-                        -- This handles overriding only values explicitly passed
-                        -- by the server configuration above. Useful when disabling
-                        -- certain features of an LSP (for example, turning off formatting for ts_ls)
-                        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-                        server.on_attach = on_attach
-                        require('lspconfig')[server_name].setup(server)
-                    end,
-                },
+                ensure_installed = ensure_installed_lsp,
+                automatic_enable = true,
             }
         end,
     },
@@ -624,6 +631,8 @@ require('lazy').setup({
                 'query',
                 'comment',
                 'terraform',
+                'zig',
+                'latex',
             },
 
             -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
@@ -717,6 +726,8 @@ require('lazy').setup({
     require 'kickstart.plugins.debug',
     { import = 'custom.plugins' },
     { import = 'custom.profile' },
+    { import = 'custom.zig' },
+    { import = 'custom.math' },
 }, {})
 
 -- [[ basic keymaps ]]
