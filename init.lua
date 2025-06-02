@@ -115,14 +115,13 @@ require('lazy').setup({
         },
     },
     { 'Bilal2453/luvit-meta', lazy = true },
-
     {
         -- lsp configuration & plugins
         'neovim/nvim-lspconfig',
         cond = is_complete_setup,
         dependencies = {
             -- automatically install lsps to stdpath for neovim
-            { 'mason-org/mason.nvim', config = true },
+            { 'mason-org/mason.nvim', opts = {} },
             'mason-org/mason-lspconfig.nvim',
             'WhoIsSethDaniel/mason-tool-installer.nvim',
             -- useful status updates for lsp
@@ -143,6 +142,12 @@ require('lazy').setup({
                     end
 
                     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
+                end
+
+                -- HACK: it is broken: https://github.com/sqls-server/sqls/issues/149
+                if client.name == 'sqls' then
+                    client.server_capabilities.documentFormattingProvider = nil
+                    client.server_capabilities.documentRangeFormattingProvider = nil
                 end
 
                 nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
@@ -199,7 +204,7 @@ require('lazy').setup({
                     'shfmt',
                     'tflint',
                     'tree-sitter-cli',
-                    'sqruff',
+                    'sql-formatter',
                 }
                 servers = {
                     -- rust_analyzer = {},
@@ -271,7 +276,7 @@ require('lazy').setup({
                     'gofumpt',
                     'goimports',
                     'shfmt',
-                    'sqruff',
+                    'sql-formatter',
                 }
                 servers = {
                     gopls = {

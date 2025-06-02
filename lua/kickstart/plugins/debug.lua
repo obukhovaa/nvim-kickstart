@@ -100,6 +100,9 @@ return {
         vim.keymap.set('n', '<leader>tl', function()
             require('dap-go').debug_last_test()
         end, { desc = 'Debug last test' })
+        vim.keymap.set('n', '<leader>ti', function()
+            require('dap-go').debug_test { buildFlags = '-tags=integration' }
+        end, { desc = 'Debug closest integration test' })
 
         -- Install js specific config
         require('dap-vscode-js').setup {

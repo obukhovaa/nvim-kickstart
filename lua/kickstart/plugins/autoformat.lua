@@ -32,6 +32,7 @@ return {
                     lsp_format = lsp_format_opt,
                 }
             end,
+            log_level = vim.log.levels.ERROR,
             formatters_by_ft = {
                 lua = { 'stylua' },
                 kotlin = { 'ktlint', lsp_format = 'fallback' },
@@ -42,6 +43,7 @@ return {
                 css = { 'prettierd', lsp_format = 'fallback' },
                 sh = { 'shfmt', lsp_format = 'fallback' },
                 bash = { 'shfmt', lsp_format = 'fallback' },
+                sql = { 'sql_formatter', lsp_format = 'fallback' },
             },
         },
     },

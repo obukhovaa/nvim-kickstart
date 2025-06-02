@@ -65,7 +65,7 @@ return {
                 result_filetype = 'markdown', -- Configure filetype of the result buffer
             }
             local gen_remote_override_opts = {
-                model = 'us.anthropic.claude-opus-4-20250514-v1:0',
+                model = 'us.anthropic.claude-sonnet-4-20250514-v1:0', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
                 host = 'llm.de-prod.cxense.com',
                 port = '443',
                 openai_path_prefix = '/api', -- BUG: changed from openai, new webui returns all models at once
@@ -109,7 +109,8 @@ return {
                         'o4',
                         'gpt',
                         'anthropic',
-                        'deepseek',
+                        -- 'deepseek',
+                        'gemini',
                     }
                     local models_path = '/api/tags'
                     local auth = ''
