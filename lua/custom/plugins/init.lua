@@ -27,7 +27,8 @@ return {
     },
     -- Ollama/OpenAI GPT
     {
-        'David-Kunz/gen.nvim',
+        'obukhovaa/gen.nvim',
+        branch = 'fix/choices-npe-open-web-ui',
         cond = is_complete_setup(),
         config = function()
             -- default to local setup
@@ -44,6 +45,9 @@ return {
             end
             local gen_local_opts = {
                 model = 'deepseek-coder-v2:latest', -- The default model to use, will be used for both local and remote Ollama service
+                model_options = {
+                    logprobs = false,
+                },
                 host = 'localhost', -- The host running the Ollama service.
                 port = '11434', -- The port on which the Ollama service is listening.
                 quit_map = 'q', -- Set keymap for close the response window
@@ -58,6 +62,7 @@ return {
                 display_mode = 'vertical-split', -- The display mode. Can be "float" or "vertical-split" or "horizontal-split".
                 show_prompt = true, -- Shows the prompt submitted to Ollama.
                 show_model = true, -- Displays which model you are using at the beginning of your chat session.
+                show_usage = true, -- Shows token usage at the end
                 no_auto_close = true, -- Never closes the window automatically.
                 debug = false, -- Prints errors and the command which is run.
                 openai_path_prefix = '', -- If remote supports multiple backends, can be managed via paths.
@@ -87,6 +92,8 @@ return {
                         .. " -H 'Authorization: Bearer "
                         .. get_api_token()
                         .. "'"
+
+                    vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(req) } }, true, {})
                     return req
                 end,
             }
