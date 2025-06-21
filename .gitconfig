@@ -1,0 +1,24 @@
+[core]
+	excludesfile = /Users/nouwa/.gitignore_global
+	autocrlf = input
+[difftool "vimdiff"]
+[mergetool "vimdiff"]
+    layout = LOCAL,MERGED,REMOTE
+[user]
+	name = Artem Obukhov
+[safe]
+	directory = /Users/nouwa/Development/piano-vx
+[alias]
+	mrdev = push -o merge_request.create -o merge_request.target=develop -o merge_request.title=Feature
+	mrmain = push -o merge_request.create -o merge_request.target=main -o merge_request.title=Release
+        lol = log --graph --decorate --pretty=oneline --abbrev-commit
+        lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+[rerere]
+	enabled = 1
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

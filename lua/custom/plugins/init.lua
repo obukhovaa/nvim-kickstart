@@ -3,12 +3,12 @@ local function is_complete_setup(_)
 end
 
 -- Function to check if a model name contains any whitelisted pattern
-local function is_white_listed(model_list, model_name)
+local function is_white_listed(model_list, id)
     if next(model_list) == nil then
         return true
     end
     for _, pattern in ipairs(model_list) do
-        if model_name:match(pattern) then
+        if id:match(pattern) then
             return true
         end
     end
@@ -46,7 +46,8 @@ return {
             local gen_local_opts = {
                 model = 'deepseek-coder-v2:latest', -- The default model to use, will be used for both local and remote Ollama service
                 model_options = {
-                    logprobs = false,
+                    -- allowed_openai_params = { 'logprobs' },
+                    -- logprobs = false,
                 },
                 host = 'localhost', -- The host running the Ollama service.
                 port = '11434', -- The port on which the Ollama service is listening.
@@ -71,9 +72,9 @@ return {
             }
             local gen_remote_override_opts = {
                 model = 'us.anthropic.claude-sonnet-4-20250514-v1:0', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
-                host = 'llm.de-prod.cxense.com',
+                host = 'litellm.de-prod.cxense.com',
                 port = '443',
-                openai_path_prefix = '/api', -- BUG: changed from openai, new webui returns all models at once
+                openai_path_prefix = '/v1',
                 ollama_path_prefix = '/ollama',
                 command = function(options)
                     local path
@@ -92,8 +93,9 @@ return {
                         .. " -H 'Authorization: Bearer "
                         .. get_api_token()
                         .. "'"
-
-                    vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(req) } }, true, {})
+                    if gen_local_opts.debug then
+                        vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(req) } }, true, {})
+                    end
                     return req
                 end,
             }
@@ -113,11 +115,18 @@ return {
                 end
                 new_opts.list_models = function(options)
                     local model_white_list = {
-                        'o4',
-                        'gpt',
-                        'anthropic',
-                        -- 'deepseek',
-                        'gemini',
+                        'o4%-mini',
+                        'o3$',
+                        'o3-pro',
+                        'gpt%-4%.1$',
+                        'gpt%-4o%-audio.*2025',
+                        'high/1536.*gpt%-image%-1',
+                        'medium/1536.*gpt%-image%-1',
+                        'eu%-claude%-3%-7%-sonnet',
+                        '^claude%-opus%-4$',
+                        'claude%-sonnet%-4$',
+                        'gemini%-2%.5%-pro%-preview%-06%-05',
+                        'gemini%-2%.5%-flash$',
                     }
                     local models_path = '/api/tags'
                     local auth = ''
@@ -139,6 +148,7 @@ return {
                     local response = vim.fn.systemlist(curl)
                     local list = vim.fn.json_decode(response)
                     if gen_local_opts.debug then
+                        vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { curl } }, true, {})
                         vim.api.nvim_echo({ { 'GenNVIM: ', 'InfoMsg' }, { vim.inspect(list) } }, true, {})
                     end
                     local models = {}
@@ -149,7 +159,7 @@ return {
                     if vim.g.gen_remote_toggle_on and vim.g.gen_remote_type == 'openai' then
                         -- Filter models based on the whitelist
                         for key, _ in pairs(list.data) do
-                            local modelName = list.data[key].name
+                            local modelName = list.data[key].id
                             if is_white_listed(model_white_list, modelName) then
                                 table.insert(models, modelName)
                             end
