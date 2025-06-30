@@ -212,30 +212,41 @@ function kevents {
 	kubectl -n "$1" get events --sort-by='.lastTimestamp' | grep -E "^\d{0,3}s|^[1-5]{0,1}m"
 }
 
-function encrypt_pwd() {
+function encrypt_pwd {
 	openssl enc -in "$1" -aes-256-cbc -p -pass stdin -out "$1.sec"
 }
 
-function decrypt_pwd() {
+function decrypt_pwd {
 	local in="$1"
 	openssl enc -in "$in" -aes-256-cbc -d -pass stdin -out ${in%$'.sec'}
 }
 
-function piano_vpn {
-	cd ~/Development/clients/vpn && sslocal -c ss.json &
-	osascript -e 'tell application "Tunnelblick"' -e "connect \"piano\"" -e "end tell"
+function md_to_pdf {
+	if [ -z "$1" ]
+	then
+		echo "provide file name without extension as a first and only argument"
+		return 1
+	fi
+		
+	pandoc "$1".md -o "$1".pdf --pdf-engine=xelatex -V mainfont="Arial" -V sansfont="Arial" -V monofont="Courier New"
 }
 
-function sniff_http {
-	local port="$1"
-	local search="$2"
-	stdbuf -oL -eL sudo tcpdump -A -s 10240 "tcp port $port and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)" \
-		| egrep -a ".+(GET |HTTP\/|POST )|^[A-Za-z0-9-]+: " \
-		| perl -nle 'BEGIN{$|=1} { s/.*?(GET |HTTP\/[0-9.]* |POST )/\n$1/g; print }' \
-		| grep -A 35 -B 5 "$search"
+function llm_price {
+    curl -X GET "https://openrouter.ai/api/v1/models" -s 2>/dev/null | jq -r '.data[] | "\(.id) | input: \(.pricing.prompt)$ | output:\(.pricing.completion)$"' | fzf --query "$1"
 }
 
 bindkey "\e\eOD" backward-word 
 bindkey "\e\eOC" forward-word
 bindkey "^[^[[D" backward-word
 bindkey "^[^[[C" forward-word
+
+function sniff_http {
+	local port="$1"
+	local search="$2"
+	local cmd="tcp port $port" 
+	local filter="and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)"
+	stdbuf -oL -eL sudo tcpdump -A -s 10240 "$cmd" \
+		| egrep -a ".+(GET |HTTP\/|POST )|^[A-Za-z0-9-]+: " \
+		| perl -nle 'BEGIN{$|=1} { s/.*?(GET |HTTP\/[0-9.]* |POST )/\n$1/g; print }' \
+		| grep -A 35 -B 5 "$search" 
+}

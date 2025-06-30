@@ -23,11 +23,11 @@ java21
 
 # Piano
 source /Users/nouwa/piano-bash-env/load.sh
-source /Users/nouwa/Development/piano-aws-sso/scripts/login.sh
+source /Users/nouwa/Development/piano/piano-aws-sso/scripts/login.sh
 
-# Zsh toolkit
 source ~/.zshrc
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
 
 # Added by Toolbox App
 export PATH="$PATH:/usr/local/bin"
@@ -35,8 +35,17 @@ export PATH="$PATH:/usr/local/bin"
 # For gitlab scripts
 source ~/.gitlab/.env
 
-# For openai scripts
+# For teamcity scripts
+source ~/.teamcity/.c2
+
+# For open ai scripts
 source ~/.openai/.env
+
+# For Atlassian scripts
+source ~/.atlassian/.env
+
+# For Figma scripts
+source ~/.figma/.env
 
 # GO tools
 export PATH="$PATH:$HOME/go/bin"
@@ -44,12 +53,14 @@ export PATH="$PATH:$HOME/go/bin"
 # RUST tools
 export PATH="$PATH:$HOME/.cargo/env"
 
+# Mysql tools
+export PATH="$PATH:/opt/homebrew/opt/mysql-client/bin"
+
 # Python to use
 alias python=/opt/homebrew/bin/python3
 alias pip=/opt/homebrew/bin/pip3
-
 # Aider and python tooling
 export PATH="$PATH:/Users/nouwa/.local/bin"
 
-# NVIM tooling
+# nvim tooling
 export PATH="$PATH:/Users/nouwa/.local/share/nvim/mason/bin"

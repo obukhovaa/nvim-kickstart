@@ -241,8 +241,7 @@ require('lazy').setup({
                     helm_ls = {},
                     html = { filetypes = { 'html', 'twig', 'hbs' } },
                     jsonls = {},
-                    -- NOTE: non-responsive, jvm development without idea is a dogwater
-                    -- kotlin_language_server = {},
+                    -- kotlin_lsp = {},
                     ts_ls = {},
                     sqls = {
                         settings = {
