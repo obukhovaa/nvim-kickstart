@@ -115,17 +115,14 @@ return {
                 end
                 new_opts.list_models = function(options)
                     local model_white_list = {
-                        'o4%-mini',
-                        'o3$',
-                        'o3-pro',
-                        'gpt%-4%.1$',
+                        'o4$',
+                        'gpt%-5',
                         'gpt%-4o%-search%-preview%-2025',
                         -- 'gpt%-4o%-audio.*2025',
                         -- 'high/1536.*gpt%-image%-1',
                         -- 'medium/1536.*gpt%-image%-1',
-                        'eu%-claude%-3%-7%-sonnet',
-                        '^claude%-opus%-4$',
-                        'claude%-sonnet%-4$',
+                        '^claude%-opus%-4%-1$',
+                        'claude%-sonnet%-4%-5$',
                         'gemini%-2%.5%-pro%-preview%-06%-05',
                         'gemini%-2%.5%-flash$',
                     }
