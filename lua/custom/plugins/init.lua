@@ -71,7 +71,7 @@ return {
                 result_filetype = 'markdown', -- Configure filetype of the result buffer
             }
             local gen_remote_override_opts = {
-                model = 'us.anthropic.claude-sonnet-4-20250514-v1:0', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
+                model = 'claude-sonnet-4-5', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
                 host = 'litellm.de-prod.cxense.com',
                 port = '443',
                 openai_path_prefix = '/v1',
