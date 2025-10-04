@@ -598,7 +598,7 @@ require('lazy').setup({
             'nvim-treesitter/nvim-treesitter-textobjects',
             {
                 'nvim-treesitter/nvim-treesitter-context',
-                build = ':TSContextEnable',
+                build = ':TSContext enable',
                 opts = {},
                 init = function()
                     vim.keymap.set('n', '<leader>k', function()
