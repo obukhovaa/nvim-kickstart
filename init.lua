@@ -378,7 +378,8 @@ require('lazy').setup({
                 local gitsigns = require 'gitsigns'
                 vim.keymap.set('n', '<leader>hp', gitsigns.preview_hunk, { buffer = bufnr, desc = 'preview git hunk' })
                 vim.keymap.set('n', '<leader>hb', gitsigns.toggle_current_line_blame, { buffer = bufnr, desc = 'toggle git blame' })
-                vim.keymap.set('n', '<leader>hd', gitsigns.diffthis, { buffer = bufnr, desc = 'diff' })
+                vim.keymap.set('n', '<leader>hC', gitsigns.blame, { buffer = bufnr, desc = 'git blame commit' })
+                vim.keymap.set('n', '<leader>hc', gitsigns.blame_line, { buffer = bufnr, desc = 'git blame commits' })
                 vim.keymap.set('n', '<leader>hD', function()
                     gitsigns.diffthis '@'
                 end, { buffer = bufnr, desc = 'diff against last commit' })
