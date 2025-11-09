@@ -221,6 +221,10 @@ require('lazy').setup({
                                 analyses = {
                                     shadow = true,
                                     useany = false,
+                                    ST1000 = false,
+                                    ST1020 = false,
+                                    ST1021 = false,
+                                    ST1022 = false,
                                 },
                                 staticcheck = true,
                                 hints = {
