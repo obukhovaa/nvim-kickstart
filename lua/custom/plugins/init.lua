@@ -473,6 +473,23 @@ return {
                 },
             }
             vim.cmd.colorscheme 'onedark'
+            
+            -- Semantic token highlights for Go
+            vim.api.nvim_set_hl(0, '@lsp.type.namespace', { link = 'Include' })
+            vim.api.nvim_set_hl(0, '@lsp.type.type', { link = 'Type' })
+            vim.api.nvim_set_hl(0, '@lsp.type.class', { link = 'Structure' })
+            vim.api.nvim_set_hl(0, '@lsp.type.enum', { link = 'Type' })
+            vim.api.nvim_set_hl(0, '@lsp.type.interface', { link = 'Structure' })
+            vim.api.nvim_set_hl(0, '@lsp.type.struct', { link = 'Structure' })
+            vim.api.nvim_set_hl(0, '@lsp.type.parameter', { link = 'Identifier' })
+            vim.api.nvim_set_hl(0, '@lsp.type.variable', { link = 'Variable' })
+            vim.api.nvim_set_hl(0, '@lsp.type.property', { link = 'Property' })
+            vim.api.nvim_set_hl(0, '@lsp.type.enumMember', { link = 'Constant' })
+            vim.api.nvim_set_hl(0, '@lsp.type.function', { link = 'Function' })
+            vim.api.nvim_set_hl(0, '@lsp.type.method', { link = 'Function' })
+            vim.api.nvim_set_hl(0, '@lsp.type.macro', { link = 'Macro' })
+            vim.api.nvim_set_hl(0, '@lsp.type.decorator', { link = 'Special' })
+            
             vim.api.nvim_create_user_command('ToggleTheme', function()
                 if vim.o.background == 'dark' then
                     vim.cmd 'colorscheme onelight'

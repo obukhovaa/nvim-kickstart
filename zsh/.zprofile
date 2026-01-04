@@ -1,12 +1,7 @@
 export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always {}' --bind 'ctrl-/:change-preview-window(down|hidden|)'"
-export KUBE_EDITOR="nvim"
-export EDITOR="nvim"
-export USE_COMPLETE_NVIM_SETUP="true"
-
-export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
-export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
-export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-export PATH="/usr/local/opt/go/libexec/bin:$PATH"
+export KUBE_EDITOR="vim"
+export EDITOR="vim"
+export USE_COMPLETE_NVIM_SETUP="false"
 
 export JAVA_8_HOME=$(/usr/libexec/java_home -v1.8)
 export JAVA_11_HOME=$(/usr/libexec/java_home -v11)
@@ -19,15 +14,10 @@ alias java17='export JAVA_HOME=$JAVA_17_HOME'
 alias java21='export JAVA_HOME=$JAVA_21_HOME'
 
 # default to Java 21
-java21
-
-# Piano
-source /Users/nouwa/piano-bash-env/load.sh
-source /Users/nouwa/Development/piano/piano-aws-sso/scripts/login.sh
+# java21
 
 source ~/.zshrc
 eval "$(/opt/homebrew/bin/brew shellenv)"
-
 
 # Added by Toolbox App
 export PATH="$PATH:/usr/local/bin"
@@ -47,20 +37,11 @@ source ~/.atlassian/.env
 # For Figma scripts
 source ~/.figma/.env
 
+# For Figma scripts
+source ~/.metabase/.env
+
 # GO tools
 export PATH="$PATH:$HOME/go/bin"
 
 # RUST tools
 export PATH="$PATH:$HOME/.cargo/env"
-
-# Mysql tools
-export PATH="$PATH:/opt/homebrew/opt/mysql-client/bin"
-
-# Python to use
-alias python=/opt/homebrew/bin/python3
-alias pip=/opt/homebrew/bin/pip3
-# Aider and python tooling
-export PATH="$PATH:/Users/nouwa/.local/bin"
-
-# nvim tooling
-export PATH="$PATH:/Users/nouwa/.local/share/nvim/mason/bin"

@@ -158,7 +158,9 @@ require('lazy').setup({
                 nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
                 nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
                 nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-                nmap('<leader>ss', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+                nmap('<leader>ss', function()
+                    require('telescope.builtin').lsp_dynamic_workspace_symbols { bufnr = bufnr }
+                end, '[W]orkspace [S]ymbols')
 
                 -- See `:help K` for why this keymap
                 nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
@@ -185,6 +187,11 @@ require('lazy').setup({
                     nmap('<leader>th', function()
                         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr })
                     end, '[T]oggle Inlay [H]ints')
+                end
+
+                -- Enable semantic tokens
+                if client.server_capabilities.semanticTokensProvider then
+                    vim.lsp.semantic_tokens.start(bufnr, client.id)
                 end
             end
 
@@ -217,7 +224,6 @@ require('lazy').setup({
                     gopls = {
                         settings = {
                             gopls = {
-                                semanticTokens = true,
                                 analyses = {
                                     shadow = true,
                                     useany = false,
@@ -237,6 +243,18 @@ require('lazy').setup({
                                     rangeVariableTypes = true,
                                 },
                                 buildFlags = { '-tags=integration wireinject !wireinject' },
+                                directoryFilters = { '-.git', '-.vscode', '-.idea', '-.vscode-test', '-node_modules' },
+                                semanticTokens = true,
+                                codelenses = {
+                                    gc_details = false,
+                                    generate = true,
+                                    regenerate_cgo = true,
+                                    run_govulncheck = true,
+                                    test = true,
+                                    tidy = true,
+                                    upgrade_dependency = true,
+                                    vendor = true,
+                                },
                             },
                         },
                     },
@@ -318,12 +336,61 @@ require('lazy').setup({
             -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+            capabilities.textDocument.semanticTokens = {
+                dynamicRegistration = false,
+                requests = {
+                    full = { delta = true },
+                    range = true,
+                },
+                tokenTypes = {
+                    'namespace',
+                    'type',
+                    'class',
+                    'enum',
+                    'interface',
+                    'struct',
+                    'typeParameter',
+                    'parameter',
+                    'variable',
+                    'property',
+                    'enumMember',
+                    'event',
+                    'function',
+                    'method',
+                    'macro',
+                    'keyword',
+                    'modifier',
+                    'comment',
+                    'string',
+                    'number',
+                    'regexp',
+                    'operator',
+                    'decorator',
+                },
+                tokenModifiers = {
+                    'declaration',
+                    'definition',
+                    'readonly',
+                    'static',
+                    'deprecated',
+                    'abstract',
+                    'async',
+                    'modification',
+                    'documentation',
+                    'defaultLibrary',
+                },
+                formats = { 'relative' },
+                overlappingTokenSupport = false,
+                multilineTokenSupport = false,
+            }
 
             for server_name, server_config in pairs(servers) do
                 local extended_capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {})
                 local config = vim.tbl_deep_extend('force', { on_attach = on_attach, capabilities = extended_capabilities }, server_config or {})
                 vim.lsp.config(server_name, config)
             end
+
+            -- vim.lsp.enable(vim.tbl_keys(servers))
 
             require('mason').setup()
             local ensure_installed_lsp = vim.tbl_keys(servers or {})
@@ -460,7 +527,8 @@ require('lazy').setup({
     -- fuzzy finder (files, lsp, etc)
     {
         'nvim-telescope/telescope.nvim',
-        branch = '0.1.x',
+        --BUG: https://github.com/nvim-telescope/telescope.nvim/issues/3438
+        -- branch = '0.1.x',
         dependencies = {
             'nvim-lua/plenary.nvim',
             -- fuzzy finder algorithm which requires local dependencies to be built.
@@ -727,6 +795,7 @@ require('lazy').setup({
                     -- Set to false if you have an `updatetime` of ~100.
                     clear_on_cursor_move = true,
                 },
+                highlight_current_scope = { enable = false },
             },
         },
     },

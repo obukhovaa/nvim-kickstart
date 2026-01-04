@@ -6,10 +6,12 @@ export ZSH="$HOME/.oh-my-zsh"
 
 # Set default edtor to nvim
 export ZVM_VI_EDITOR="nvim"
-
 export ZVM_VI_HIGHLIGHT_FOREGROUND="white"
 export ZVM_VI_HIGHLIGHT_BACKGROUND="blue"
 export ZVM_VI_HIGHLIGHT_EXTRASTYLE="bold"
+export ZVM_SYSTEM_CLIPBOARD_ENABLED=true
+
+export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git/*" --glob "!node_modules/*"'
 
 # zsh-vi-mode will auto execute this zvm_after_init function
 # required to fix fzf key binds
@@ -123,9 +125,8 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-alias tmux_guide="open /Users/nouwa/Development/guide/tmux.html"
-alias vim_guide="chrome https://devhints.io/vim"
+# use directory scoped .envrc
+eval "$(direnv hook zsh)"
 
 function kdig {
 	local is_minimal=true
@@ -148,10 +149,31 @@ function kdig {
 }
 
 function kexec { 
-	local target_pods="$(kubectl -n $1 get pods | grep "$2")"
-	local pod_name="$(awk '{ print $1;exit;}' <<< $target_pods)"
-	echo "connecting to $pod_name"
-	kubectl -n "$1" exec -ti $pod_name -- sh
+    local namespace="$1"
+    local pod_pattern="$2"
+    local command="${3:-sh}"
+    
+    if [[ -z "$namespace" ]] || [[ -z "$pod_pattern" ]]; then
+        echo "Usage: kexec <namespace> <pod-pattern> [command]"
+        return 1
+    fi
+    
+    local target_pods="$(kubectl -n "$namespace" get pods --no-headers | grep "$pod_pattern")"
+    
+    if [[ -z "$target_pods" ]]; then
+        echo "No pods found matching pattern: $pod_pattern"
+        return 1
+    fi
+    
+    local pod_name="$(awk '{ print $1; exit; }' <<< "$target_pods")"
+    echo "Connecting to $pod_name in namespace $namespace"
+    
+    # Always use sh -c for complex commands to handle shell operators properly
+    if [[ "$command" != "sh" ]] && [[ "$command" != "bash" ]]; then
+        kubectl -n "$namespace" exec -ti "$pod_name" -- sh -c "$command"
+    else
+        kubectl -n "$namespace" exec -ti "$pod_name" -- "$command"
+    fi
 }
 
 function kscale {
@@ -221,18 +243,31 @@ function decrypt_pwd {
 	openssl enc -in "$in" -aes-256-cbc -d -pass stdin -out ${in%$'.sec'}
 }
 
-function md_to_pdf {
-	if [ -z "$1" ]
-	then
-		echo "provide file name without extension as a first and only argument"
-		return 1
-	fi
-		
-	pandoc "$1".md -o "$1".pdf --pdf-engine=xelatex -V mainfont="Arial" -V sansfont="Arial" -V monofont="Courier New"
-}
-
 function llm_price {
     curl -X GET "https://openrouter.ai/api/v1/models" -s 2>/dev/null | jq -r '.data[] | "\(.id) | input: \(.pricing.prompt)$ | output:\(.pricing.completion)$"' | fzf --query "$1"
+}
+
+function docker_clean {
+	docker images --filter "dangling=true" --format "json" | jq -c ".ID" | xargs docker rmi
+}
+
+function kubectl_login_aws {
+	aws sso login --profile k8s
+	export AWS_PROFILE=k8s
+}
+
+function fopen {
+	rg "$1" | fzf | awk '{ split($1,a,":"); print a[1]; exit; }' | xargs nvim
+}
+
+function sniff_http {
+	local port="$1"
+	local search="$2"
+	sudo tcpdump -i any -A -s 0 "tcp src port $port" -l | grep -A 35 -B 5 "$search" 
+}
+
+function yc-shell {
+	YANDEXED=true zsh
 }
 
 bindkey "\e\eOD" backward-word 
@@ -240,13 +275,9 @@ bindkey "\e\eOC" forward-word
 bindkey "^[^[[D" backward-word
 bindkey "^[^[[C" forward-word
 
-function sniff_http {
-	local port="$1"
-	local search="$2"
-	local cmd="tcp port $port" 
-	local filter="and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)"
-	stdbuf -oL -eL sudo tcpdump -A -s 10240 "$cmd" \
-		| egrep -a ".+(GET |HTTP\/|POST )|^[A-Za-z0-9-]+: " \
-		| perl -nle 'BEGIN{$|=1} { s/.*?(GET |HTTP\/[0-9.]* |POST )/\n$1/g; print }' \
-		| grep -A 35 -B 5 "$search" 
-}
+if [[ -n "$YANDEXED" ]]; then
+	# The next line updates PATH for CLI.
+	if [ -f '/Users/nouwa/yandex-cloud/path.bash.inc' ]; then source '/Users/nouwa/yandex-cloud/path.bash.inc'; fi
+	# The next line enables shell command completion for yc.
+	if [ -f '/Users/nouwa/yandex-cloud/completion.zsh.inc' ]; then source '/Users/nouwa/yandex-cloud/completion.zsh.inc'; fi
+fi
