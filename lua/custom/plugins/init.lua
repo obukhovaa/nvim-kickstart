@@ -16,6 +16,9 @@ local function is_white_listed(model_list, id)
 end
 
 return {
+    {
+        'LunarVim/bigfile.nvim',
+    },
     -- AI code agent: https://aider.chat
     {
         'joshuavial/aider.nvim',
@@ -473,7 +476,7 @@ return {
                 },
             }
             vim.cmd.colorscheme 'onedark'
-            
+
             -- Semantic token highlights for Go
             vim.api.nvim_set_hl(0, '@lsp.type.namespace', { link = 'Include' })
             vim.api.nvim_set_hl(0, '@lsp.type.type', { link = 'Type' })
@@ -489,7 +492,7 @@ return {
             vim.api.nvim_set_hl(0, '@lsp.type.method', { link = 'Function' })
             vim.api.nvim_set_hl(0, '@lsp.type.macro', { link = 'Macro' })
             vim.api.nvim_set_hl(0, '@lsp.type.decorator', { link = 'Special' })
-            
+
             vim.api.nvim_create_user_command('ToggleTheme', function()
                 if vim.o.background == 'dark' then
                     vim.cmd 'colorscheme onelight'

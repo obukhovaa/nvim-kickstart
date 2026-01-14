@@ -672,7 +672,10 @@ require('lazy').setup({
             {
                 'nvim-treesitter/nvim-treesitter-context',
                 build = ':TSContext enable',
-                opts = {},
+                opts = {
+                    max_lines = 3,
+                    multiline_threshold = 3,
+                },
                 init = function()
                     vim.keymap.set('n', '<leader>k', function()
                         require('treesitter-context').go_to_context(vim.v.count1)
