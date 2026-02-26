@@ -74,7 +74,7 @@ return {
                 result_filetype = 'markdown', -- Configure filetype of the result buffer
             }
             local gen_remote_override_opts = {
-                model = 'claude-sonnet-4-5', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
+                model = 'claude-opus-4-6', -- 'us.anthropic.claude-opus-4-20250514-v1:0',
                 host = 'litellm.de-prod.cxense.com',
                 port = '443',
                 openai_path_prefix = '/v1',
@@ -118,16 +118,14 @@ return {
                 end
                 new_opts.list_models = function(options)
                     local model_white_list = {
-                        'o4$',
-                        'gpt%-5',
-                        'gpt%-4o%-search%-preview%-2025',
+                        'o5$',
+                        '^gpt%-5',
                         -- 'gpt%-4o%-audio.*2025',
                         -- 'high/1536.*gpt%-image%-1',
                         -- 'medium/1536.*gpt%-image%-1',
-                        '^claude%-opus%-4%-1$',
-                        'claude%-sonnet%-4%-5$',
-                        'gemini%-2%.5%-pro%-preview%-06%-05',
-                        'gemini%-2%.5%-flash$',
+                        '^claude%-opus%-4%-6$',
+                        '^claude%-sonnet%-4%-5$',
+                        'gemini%-3',
                     }
                     local models_path = '/api/tags'
                     local auth = ''
@@ -288,6 +286,13 @@ return {
         cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
         ft = { 'markdown' },
         build = ':call mkdp#util#install()',
+    },
+    {
+        'MeanderingProgrammer/render-markdown.nvim',
+        -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' }, -- if you use the mini.nvim suite
+        -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
+        -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+        opts = {},
     },
     -- replace cmdline
     {

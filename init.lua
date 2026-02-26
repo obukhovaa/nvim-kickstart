@@ -263,7 +263,7 @@ require('lazy').setup({
                     helm_ls = {},
                     html = { filetypes = { 'html', 'twig', 'hbs' } },
                     jsonls = {},
-                    -- kotlin_lsp = {},
+                    kotlin_lsp = {},
                     ts_ls = {},
                     sqls = {
                         settings = {
